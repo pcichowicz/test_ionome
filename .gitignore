@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Environments
+env/
+venv/
+.env
+.venv/
+
+# Jupyter
+.ipynb_checkpoints
+*.nbconvert.ipynb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors and IDEs
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.idea/
+
+# Data (do NOT commit raw mzML files)
+data/raw/
+data/processed/
+
+# Results and large outputs
+results/
+*.h5
+*.sqlite
+*.db
+
+# Logs
+*.log
+
+# git-lfs pointer files (if used)
+*.mzML
+
+# Mac / other
+*.DS_Store
+

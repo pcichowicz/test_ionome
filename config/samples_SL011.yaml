@@ -1,0 +1,136 @@
+samples:
+  - unique_id: SL011_EA_1
+    id: SL011
+    file: 031__20210415__SL011__EA_Blank__nosplit.mzML
+    condition: Control
+    description: Extraction Blank
+    replicate: 1
+    species: H. filiformis
+
+  - unique_id: SL011_EA_2
+    id: SL011
+    file: 032__20210415__SL011__EA_Blank__nosplit.mzML
+    condition: Control
+    description: Extraction Blank
+    replicate: 2
+    species: H. filiformis
+
+  - unique_id: SL011_PooledQC_1
+    id: SL011
+    file: 033__20210415__SL011__PooledQC__nosplit.mzML
+    condition: Control
+    description: Pooled quality control
+    replicate: 1
+    species: H. filiformis
+
+  - unique_id: SL011_PooledQC_2
+    id: SL011
+    file: 034__20210415__SL011__PooledQC__nosplit.mzML
+    condition: Control
+    description: Pooled quality control
+    replicate: 2
+    species: H. filiformis
+
+  - unique_id: SL011_PooledQC_3
+    id: SL011
+    file: 035__20210415__SL011__PooledQC__nosplit.mzML
+    condition: Control
+    description: Pooled quality control
+    replicate: 3
+    species: H. filiformis
+
+  - unique_id: SL011_PooledQC_4
+    id: SL011
+    file: 036__20210415__SL011__PooledQC__nosplit.mzML
+    condition: Control
+    description: Pooled quality control
+    replicate: 4
+    species: H. filiformis
+
+  - unique_id: SL011_MB_1
+    id: SL011
+    file: 037__20210415__SL011__MB__nosplit.mzML
+    condition: Control
+    description: Method Blank
+    replicate: 1
+    species: H. filiformis
+
+  - unique_id: SL011_PlasmaQC_1
+    id: SL011
+    file: 039__20210415__SL011__PlasmaQC_1__nosplit.mzML
+    condition: Control
+    description: Plasma control
+    replicate: 1
+    species: H. filiformis
+
+  - unique_id: SL011_PlasmaQC_2
+    id: SL011
+    file: 040__20210415__SL011__PlasmaQC_2__nosplit.mzML
+    condition: Control
+    description: Plasma control
+    replicate: 2
+    species: H. filiformis
+
+  - unique_id: SL011_PlasmaQC_3
+    id: SL011
+    file: 041__20210415__SL011__PlasmaQC_3__nosplit.mzML
+    condition: Control
+    description: Plasma control
+    replicate: 3
+    species: H. filiformis
+
+  - unique_id: SL011_HS_1
+    id: SL011
+    file: 045__20210415__SL011__HS1__nosplit.mzML
+    condition: Treatment
+    description: Sample
+    replicate: 1
+    species: H. filiformis
+
+  - unique_id: SL011_HS_2
+    id: SL011
+    file: 046__20210415__SL011__HS2__nosplit.mzML
+    condition: Treatment
+    description: Sample
+    replicate: 2
+    species: H. filiformis
+
+  - unique_id: SL011_HS_3
+    id: SL011
+    file: 047__20210415__SL011__HS3__nosplit.mzML
+    condition: Treatment
+    description: Sample
+    replicate: 3
+    species: H. filiformis
+
+  - unique_id: SL011_HS_4
+    id: SL011
+    file: 048__20210415__SL011__HS4__nosplit.mzML
+    condition: Treatment
+    description: Sample
+    replicate: 4
+    species: H. filiformis
+
+  - unique_id: SL011_HS_5
+    id: SL011
+    file: 050__20210415__SL011__HS5__nosplit.mzML
+    condition: Treatment
+    description: Sample
+    replicate: 5
+    species: H. filiformis
+
+  - unique_id: SL011_HS_6
+    id: SL011
+    file: 051__20210415__SL011__HS6__nosplit.mzML
+    condition: Treatment
+    description: Sample
+    replicate: 6
+    species: H. filiformis
+
+  - unique_id: SL011_MB_2
+    id: SL011
+    file: 058__20210415__SL011__MB__nosplit.mzML
+    condition: Control
+    description: Method Blank
+    replicate: 2
+    species: H. filiformis

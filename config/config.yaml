@@ -1,0 +1,60 @@
+# config.yaml
+
+# General pipeline settings
+rerun: true
+save_parquet: true
+verbose: true
+
+# Paths
+data_dir: "data/raw"
+cached_dir: "data/cached"
+results_dir: "results"
+logs_dir: "logs"
+
+target_mz_list:
+  p-coumerate: 163.04007
+  urocanate: 137.03565
+  caffeate: 179.03498
+  cinnamate: 147.04460
+  ferulate: 193.05009
+  sinapate: 223.06065
+
+target_mz_params:
+  tol: 0.01
+
+# Parsing and preprocessing
+parser:
+  ms_level: 1
+
+# Baseline correction
+baseline:
+  method: asls
+  asls:
+    lambda: 1e5
+    p: 0.01
+    niter: 10
+    tol: 1e-6
+  snip:
+    window: 5
+    precision: 9
+    clip_negatives: true
+
+# Peak detection
+peak_detection:
+  window: 5
+  precision: 9
+  prominence: 0.01
+  rel_height: 1
+  buffer: 0
+
+# Feature alignment
+alignment:
+  enabled: true
+  method: "obiwarp"
+
+# Plotting options
+plots:
+  tic: true
+  bpc: true
+  xic: true
+  save_figures: true
