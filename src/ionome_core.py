@@ -16,9 +16,6 @@ from pathlib import Path
 import yaml
 import pickle
 
-# from src.Preprocessing import retention_time
-
-
 class Ionome:
     """Encapsulates the mzML file analysis"""
 

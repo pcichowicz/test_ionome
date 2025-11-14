@@ -7,7 +7,7 @@ verbose: true
 
 # Paths
 data_dir: "data/raw"
-cached_dir: "data/cached"
+cached_dir: "data/processed"
 results_dir: "results"
 logs_dir: "logs"
 
@@ -47,13 +47,8 @@ peak_detection:
   rel_height: 1
   buffer: 0
 
-# Feature alignment
-alignment:
-  enabled: true
-  method: "obiwarp"
-
 # Plotting options
-plots:
+plotting:
   tic: true
   bpc: true
   xic: true
