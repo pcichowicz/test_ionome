@@ -1,5 +1,3 @@
-from tkinter.scrolledtext import example
-
 # < Ionome >
 **Ionome** is an LC–MS data analysis pipeline designed for exploratory metabolomics, peak extraction, and automated chromatographic processing.  
 The long-term goal of this project is to provide a modular, reproducible workflow for working with mzML files, extracting XICs, computing TIC/BPC, managing datasets, and generating a final report.
@@ -191,7 +189,7 @@ example = Ionome(run_id="SL005", samples="samples_SL011.yaml")
     >[2025-11-17 06:11:16][Ionome.__init__]
     	Initializing run ID SL005 for analysis
 
-Then you can load the spectra data from mzml files like:
+Then you can load the spectra data from mzml files using `load.data()`:
 
 ```python
 example.load_data()
@@ -211,23 +209,8 @@ first_raw_df = example.data['SL005_EL_24hr']
 first_raw_df
 ```
 
-
-
-
 <div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
