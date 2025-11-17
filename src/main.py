@@ -2,8 +2,7 @@ import pandas as pd
 import pymzml
 from matplotlib import pyplot as plt
 
-from preprocess import MzmlParser
-from ionome_core import Ionome
+from src.ionome_core import Ionome
 
 
 def main():

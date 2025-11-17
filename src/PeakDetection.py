@@ -3,9 +3,7 @@ from time import sleep
 from numpy.ma import reshape
 from scipy.signal import find_peaks, peak_widths
 
-from helpers import *
-
-
+from src.helpers import *
 
 class PeakDetection:
     def __init__(self,df_data, **kwargs):

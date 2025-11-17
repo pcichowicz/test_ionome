@@ -5,7 +5,7 @@ import pandas as pd
 class SampleMetaData:
     def __init__(self, yaml_file: str | Path):
 
-        with open(yaml_file, "r") as f:
+        with open(f"../config/{yaml_file}", "r") as f:
             data = yaml.safe_load(f)
 
         self.df = pd.DataFrame(data["samples"])

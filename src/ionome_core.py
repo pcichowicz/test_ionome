@@ -3,14 +3,15 @@ import time
 
 import pandas as pd
 
-from SampleMetaData import SampleMetaData
-from preprocess import MzmlParser
-from correct_baseline import BaselineCorrection
-from PeakDetection import PeakDetection
-from Visualization import Chromatograms
-from paths import CACHED_DIR
+from src.SampleMetaData import SampleMetaData
+from src.preprocess import MzmlParser
+from src.correct_baseline import BaselineCorrection
+from src.PeakDetection import PeakDetection
+from src.Visualization import Chromatograms
+from src.paths import CACHED_DIR
 from time import sleep
-from helpers import log_method_entry
+from src.helpers import log_method_entry
+
 # libraries
 from pathlib import Path
 import yaml
@@ -26,7 +27,7 @@ class Ionome:
                  ):
 
         # Load yaml configurations
-        with open(config_file, "r") as f:
+        with open(f"../config/{config_file}", "r") as f:
             self.config = yaml.safe_load(f)
 
         self.run_id: str = run_id
@@ -44,7 +45,7 @@ class Ionome:
         self.data_unmixed_chromatogram = None
 
         log_method_entry()
-        print(f"\t> Initializing run ID {self.run_id} for analysis")
+        print(f"\tInitializing run ID {self.run_id} for analysis")
 
     def __repr__(self):
         return (f"<Ionome>\n(run_id = {self.run_id}"

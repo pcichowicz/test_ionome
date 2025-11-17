@@ -4,7 +4,7 @@ Returns dataframe
 """
 import pandas as pd
 import pymzml
-from paths import DATA_DIR, CACHED_DIR
+from src.paths import DATA_DIR, CACHED_DIR
 
 class MzmlParser:
     def __init__(self, mzml_file: dict, rerun, **parser_cfg):

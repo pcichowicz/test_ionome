@@ -28,7 +28,7 @@ import numpy as np
 from scipy import sparse
 from scipy.sparse.linalg import spsolve
 import tqdm
-from helpers import log_method_entry
+from src.helpers import log_method_entry
 
 class BaselineCorrection:
     def __init__(self,**kwargs):
