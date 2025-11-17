@@ -1,7 +1,7 @@
 # config.yaml
 
 # General pipeline settings
-rerun: true
+rerun: false
 save_parquet: true
 verbose: true
 
@@ -11,6 +11,7 @@ cached_dir: "data/processed"
 results_dir: "results"
 logs_dir: "logs"
 
+# Metabolites for analysis
 target_mz_list:
   p-coumerate: 163.04007
   urocanate: 137.03565
@@ -19,14 +20,15 @@ target_mz_list:
   ferulate: 193.05009
   sinapate: 223.06065
 
+# tolerance for mz detection
 target_mz_params:
   tol: 0.01
 
-# Parsing and preprocessing
+# Parsing and preprocessing of mzML files
 parser:
   ms_level: 1
 
-# Baseline correction
+# Baseline correction parameters
 baseline:
   method: asls
   asls:
@@ -39,7 +41,7 @@ baseline:
     precision: 9
     clip_negatives: true
 
-# Peak detection
+# Peak detection parameters
 peak_detection:
   window: 5
   precision: 9
