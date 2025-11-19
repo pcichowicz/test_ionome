@@ -216,285 +216,49 @@ You can also check each individual dataframes by `.data['sample_name']`
 
 ```python
 ea_1_df = example.data['SL011_EA_1'] # extraction blank control
-hs_1_df = example.data['SL011_HS_1'] # sample
 ea_1_df
-hs_1_df
 ```
-<style>
-/* Hide radio buttons */
-.tabs input[type="radio"] {
-  display: none;
-}
+|         | ms_level | scan_id | retention_time | intensity |     mz |
+|--------:|---------:|--------:|---------------:|----------:|-------:|
+|       0 |        1 |       1 |        4.29355 |   430.934 |  50.12 |
+|       1 |        1 |       1 |        4.29355 |   836.703 |  50.91 |
+|       2 |        1 |       1 |        4.29355 |   1448.42 |  52.04 |
+|       3 |        1 |       1 |        4.29355 |   293.509 |  52.96 |
+|       4 |        1 |       1 |        4.29355 |   341.261 |  54.09 |
+|     ... |      ... |     ... |            ... |       ... |    ... |
+| 1889741 |        1 |    2990 |        22.9909 |   4.43263 |  595.7 |
+| 1889742 |        1 |    2990 |        22.9909 |   3.41086 | 596.93 |
+| 1889743 |        1 |    2990 |        22.9909 |  0.733822 | 597.76 |
+| 1889744 |        1 |    2990 |        22.9909 |   1.92111 | 598.36 |
+| 1889745 |        1 |    2990 |        22.9909 |  0.810828 | 599.46 |
 
-/* Tab labels (buttons) */
-.tabs label {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  margin-right: -1px;
-  cursor: pointer;
-}
+```python
+hs_1_df = example.data['SL011_HS_1'] # sample
+hs_1_df
 
-/* Active tab label styling */
-.tabs input[type="radio"]:checked + label {
-  font-weight: bold;
-}
-
-/* Content boxes */
-.tab-content {
-  border: 1px;
-  padding: 15px;
-  display: none;
-  border-radius: 0 4px 4px 4px;
-}
-
-/* Display the active tab content */
-#tab1:checked ~ #content1 {
-  display: block;
-}
-#tab2:checked ~ #content2 {
-  display: block;
-}
-</style>
-
-<div class="tabs">
-
-  <!-- TAB SELECTORS -->
-  <input type="radio" id="tab1" name="tabs" checked>
-  <label for="tab1">Extraction Blank</label>
-
-  <input type="radio" id="tab2" name="tabs">
-  <label for="tab2">Sample</label>
-
-  <!-- TAB CONTENT 1 -->
-  <div id="content1" class="tab-content">
-
-<pre>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>ms_level</th>
-      <th>scan_id</th>
-      <th>retention_time</th>
-      <th>intensity</th>
-      <th>mz</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.29355</td>
-      <td>430.933655</td>
-      <td>50.119999</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.29355</td>
-      <td>836.703247</td>
-      <td>50.910000</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.29355</td>
-      <td>1448.419556</td>
-      <td>52.040001</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.29355</td>
-      <td>293.509064</td>
-      <td>52.959999</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.29355</td>
-      <td>341.261475</td>
-      <td>54.090000</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>1889741</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.990917</td>
-      <td>4.432630</td>
-      <td>595.700012</td>
-    </tr>
-    <tr>
-      <th>1889742</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.990917</td>
-      <td>3.410859</td>
-      <td>596.929993</td>
-    </tr>
-    <tr>
-      <th>1889743</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.990917</td>
-      <td>0.733822</td>
-      <td>597.760010</td>
-    </tr>
-    <tr>
-      <th>1889744</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.990917</td>
-      <td>1.921110</td>
-      <td>598.359985</td>
-    </tr>
-    <tr>
-      <th>1889745</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.990917</td>
-      <td>0.810828</td>
-      <td>599.460022</td>
-    </tr>
-  </tbody>
-</table>
-</pre>
-
-  </div>
-
-  <!-- TAB CONTENT 2 -->
-  <div id="content2" class="tab-content">
-
-<pre>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>ms_level</th>
-      <th>scan_id</th>
-      <th>retention_time</th>
-      <th>intensity</th>
-      <th>mz</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.293383</td>
-      <td>23233.423828</td>
-      <td>50.040001</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.293383</td>
-      <td>35742.230469</td>
-      <td>51.040001</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.293383</td>
-      <td>91149.109375</td>
-      <td>52.040001</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.293383</td>
-      <td>11119.541992</td>
-      <td>53.029999</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1</td>
-      <td>1</td>
-      <td>4.293383</td>
-      <td>1989.252319</td>
-      <td>54.029999</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>1735420</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.99075</td>
-      <td>2.737132</td>
-      <td>595.630005</td>
-    </tr>
-    <tr>
-      <th>1735421</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.99075</td>
-      <td>1.623667</td>
-      <td>596.559998</td>
-    </tr>
-    <tr>
-      <th>1735422</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.99075</td>
-      <td>3.173591</td>
-      <td>597.719971</td>
-    </tr>
-    <tr>
-      <th>1735423</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.99075</td>
-      <td>2.930570</td>
-      <td>598.669983</td>
-    </tr>
-    <tr>
-      <th>1735424</th>
-      <td>1</td>
-      <td>2990</td>
-      <td>22.99075</td>
-      <td>1.037758</td>
-      <td>599.260010</td>
-    </tr>
-  </tbody>
-</table>
-</pre>
-
-  </div>
-
-</div>
+```
+|         | ms_level | scan_id | retention_time | intensity |     mz |
+|--------:|---------:|--------:|---------------:|----------:|-------:|
+|       0 |        1 |       1 |        4.29338 |   23233.4 |  50.04 |
+|       1 |        1 |       1 |        4.29338 |   35742.2 |  51.04 |
+|       2 |        1 |       1 |        4.29338 |   91149.1 |  52.04 |
+|       3 |        1 |       1 |        4.29338 |   11119.5 |  53.03 |
+|       4 |        1 |       1 |        4.29338 |   1989.25 |  54.03 |
+|     ... |      ... |     ... |            ... |       ... |    ... |
+| 1735420 |        1 |    2990 |        22.9907 |   2.73713 | 595.63 |
+| 1735421 |        1 |    2990 |        22.9907 |   1.62367 | 596.56 |
+| 1735422 |        1 |    2990 |        22.9907 |   3.17359 | 597.72 |
+| 1735423 |        1 |    2990 |        22.9907 |   2.93057 | 598.67 |
+| 1735424 |        1 |    2990 |        22.9907 |   1.03776 | 599.26 |
 
 ### Quality Control plots
 To plot and visualize basic quality control plots, use `plot_chromatogram('tic')` to show Total Ion Chromatograms (TIC plots)
 ```python
 example.plot_chromatogram("tic")
 ```
-<img src="git_images/SL011_EA_1_tic_chrom.png" width="450">
-<img src="git_images/SL011_MB_1_tic_chrom.png" width="450">
-<img src="git_images/SL011_HS_1_tic_chrom.png" width="450">
+<img src="git_images/SL011_EA_1_tic_chrom.png" width="1000">
+<img src="git_images/SL011_MB_1_tic_chrom.png" width="1000">
+<img src="git_images/SL011_HS_1_tic_chrom.png" width="1000">
 
 
 ## LICENSE
