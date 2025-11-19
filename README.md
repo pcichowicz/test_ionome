@@ -12,23 +12,30 @@ More components (peak deconvolution, automated annotation, QC workflows, dataset
 
 ---
 ## Development Status
-Development Status
 
-Ver_1:
+**Ver 1.0.0:**
 
 mzML loading  
 TIC/BPC computation  
 Basic XIC extraction  
+Quality control plots (Total Ion Chormatograms & Base Peak Chromatograms)  
 Preliminary metadata dictionaries  
 Jupyter notebook exploration  
 
-Next goals (Ver_2):  
-Peak detection and deconvolution  
+**Next goals ( Ver 1.1.0 ) :**
+
+Peak detection and deconvolution (currently working on)  
 Compound annotation tables  
 Sample comparison (e.g., SL005 vs SL011)  
 Batch pipelines for entire datasets  
 Cleaner controller abstractions  
 Auto-QC metrics (noise, intensity drift, retention time shifts)  
+
+### Dataset using to test the package:
+> **Little AS, Younker IT, Schechter MS, Bernardino PN, Méheust R, Stemczynski J, Scorza K, Mullowney MW, Sharan D, Waligurski E, Smith R, Ramanswamy R, Leiter W, Moran D, McMillin M, Odenwald MA, Iavarone AT, Sidebottom AM, Sundararajan A, Pamer EG, Eren AM, Light SH.**  
+*Dietary- and host-derived metabolites are used by diverse gut bacteria for anaerobic respiration.*  
+Nat Microbiol. 2024 Jan;9(1):55-69. Epub 2024 Jan 4.  
+https://massive.ucsd.edu/ProteoSAFe/dataset_files.jsp?task=365b6b62ef34444c821aff7d6ff9e499#%7B%22table_sort_history%22%3A%22main.collection_asc%22%2C%22main.collection_input%22%3A%22peak%7C%7CEXACT%22%7D
 
 ## Installation
 **Status:** _Currently in development — not yet distributed as a package._
@@ -183,11 +190,11 @@ You can then run `Ionome` class object to initialize the workflow.
 
 ```python
 from src.ionome_core import Ionome
-example = Ionome(run_id="SL005", samples="samples_SL011.yaml")
+example = Ionome(run_id="SL011", samples="samples_SL011.yaml")
 ```
 
     >[2025-11-17 06:11:16][Ionome.__init__]
-    	Initializing run ID SL005 for analysis
+    	Initializing run ID SL011 for analysis
 
 Then you can load the spectra data from mzml files using `load.data()`:
 
@@ -195,22 +202,73 @@ Then you can load the spectra data from mzml files using `load.data()`:
 example.load_data()
 ```
 
-    >[2025-11-17 06:11:44][Ionome.load_data]
-    	> Loading spectra data for sample SL005_EA_1...
-    	 Parsing 010__20201112__SL005__EA_Blank__nosplit.mzML ... 
-    	 Caching spectra data
-    	> Loading spectra data for sample SL005_EA_2...
-    	 Parsing 011__20201112__SL005__EA_Blank__nosplit.mzML ... 
-    	 Caching spectra data
-             ...
+    >[2025-11-19 17:49:44][Ionome.load_data]
+    	> Loading spectra data for sample SL011_EA_1...
+    	  Using cached file
+    	> Loading spectra data for sample SL011_MB_1...
+    	  Using cached file
+    	> Loading spectra data for sample SL011_HS_1...
+    	  Using cached file
+    	...
+
+
+You can also check each individual dataframes by `.data['sample_name']`
 
 ```python
-first_raw_df = example.data['SL005_EL_24hr']
-first_raw_df
+ea_1_df = example.data['SL011_EA_1'] # extraction blank control
+hs_1_df = example.data['SL011_HS_1'] # sample
+ea_1_df
+hs_1_df
 ```
+<style>
+/* Hide radio buttons */
+.tabs input[type="radio"] {
+  display: none;
+}
 
-<div>
+/* Tab labels (buttons) */
+.tabs label {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  margin-right: -1px;
+  cursor: pointer;
+}
 
+/* Active tab label styling */
+.tabs input[type="radio"]:checked + label {
+  font-weight: bold;
+}
+
+/* Content boxes */
+.tab-content {
+  border: 1px;
+  padding: 15px;
+  display: none;
+  border-radius: 0 4px 4px 4px;
+}
+
+/* Display the active tab content */
+#tab1:checked ~ #content1 {
+  display: block;
+}
+#tab2:checked ~ #content2 {
+  display: block;
+}
+</style>
+
+<div class="tabs">
+
+  <!-- TAB SELECTORS -->
+  <input type="radio" id="tab1" name="tabs" checked>
+  <label for="tab1">Extraction Blank</label>
+
+  <input type="radio" id="tab2" name="tabs">
+  <label for="tab2">Sample</label>
+
+  <!-- TAB CONTENT 1 -->
+  <div id="content1" class="tab-content">
+
+<pre>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -227,41 +285,41 @@ first_raw_df
       <th>0</th>
       <td>1</td>
       <td>1</td>
-      <td>4.293533</td>
-      <td>24314.119141</td>
-      <td>51.040001</td>
+      <td>4.29355</td>
+      <td>430.933655</td>
+      <td>50.119999</td>
     </tr>
     <tr>
       <th>1</th>
       <td>1</td>
       <td>1</td>
-      <td>4.293533</td>
-      <td>53341.289062</td>
-      <td>52.060001</td>
+      <td>4.29355</td>
+      <td>836.703247</td>
+      <td>50.910000</td>
     </tr>
     <tr>
       <th>2</th>
       <td>1</td>
       <td>1</td>
-      <td>4.293533</td>
-      <td>6819.981934</td>
-      <td>53.049999</td>
+      <td>4.29355</td>
+      <td>1448.419556</td>
+      <td>52.040001</td>
     </tr>
     <tr>
       <th>3</th>
       <td>1</td>
       <td>1</td>
-      <td>4.293533</td>
-      <td>1238.951294</td>
-      <td>53.980000</td>
+      <td>4.29355</td>
+      <td>293.509064</td>
+      <td>52.959999</td>
     </tr>
     <tr>
       <th>4</th>
       <td>1</td>
       <td>1</td>
-      <td>4.293533</td>
-      <td>4658.718750</td>
-      <td>55.020000</td>
+      <td>4.29355</td>
+      <td>341.261475</td>
+      <td>54.090000</td>
     </tr>
     <tr>
       <th>...</th>
@@ -272,53 +330,173 @@ first_raw_df
       <td>...</td>
     </tr>
     <tr>
-      <th>1792196</th>
+      <th>1889741</th>
       <td>1</td>
       <td>2990</td>
-      <td>22.990900</td>
-      <td>1.795156</td>
-      <td>596.169983</td>
+      <td>22.990917</td>
+      <td>4.432630</td>
+      <td>595.700012</td>
     </tr>
     <tr>
-      <th>1792197</th>
+      <th>1889742</th>
       <td>1</td>
       <td>2990</td>
-      <td>22.990900</td>
-      <td>1.711735</td>
-      <td>597.260010</td>
+      <td>22.990917</td>
+      <td>3.410859</td>
+      <td>596.929993</td>
     </tr>
     <tr>
-      <th>1792198</th>
+      <th>1889743</th>
       <td>1</td>
       <td>2990</td>
-      <td>22.990900</td>
-      <td>3.206854</td>
-      <td>597.969971</td>
+      <td>22.990917</td>
+      <td>0.733822</td>
+      <td>597.760010</td>
     </tr>
     <tr>
-      <th>1792199</th>
+      <th>1889744</th>
       <td>1</td>
       <td>2990</td>
-      <td>22.990900</td>
-      <td>1.128073</td>
-      <td>598.570007</td>
+      <td>22.990917</td>
+      <td>1.921110</td>
+      <td>598.359985</td>
     </tr>
     <tr>
-      <th>1792200</th>
+      <th>1889745</th>
       <td>1</td>
       <td>2990</td>
-      <td>22.990900</td>
-      <td>3.180370</td>
-      <td>599.280029</td>
+      <td>22.990917</td>
+      <td>0.810828</td>
+      <td>599.460022</td>
     </tr>
   </tbody>
 </table>
-<p>1792201 rows × 5 columns</p>
+</pre>
+
+  </div>
+
+  <!-- TAB CONTENT 2 -->
+  <div id="content2" class="tab-content">
+
+<pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ms_level</th>
+      <th>scan_id</th>
+      <th>retention_time</th>
+      <th>intensity</th>
+      <th>mz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>4.293383</td>
+      <td>23233.423828</td>
+      <td>50.040001</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>1</td>
+      <td>4.293383</td>
+      <td>35742.230469</td>
+      <td>51.040001</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>1</td>
+      <td>4.293383</td>
+      <td>91149.109375</td>
+      <td>52.040001</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>1</td>
+      <td>4.293383</td>
+      <td>11119.541992</td>
+      <td>53.029999</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1</td>
+      <td>1</td>
+      <td>4.293383</td>
+      <td>1989.252319</td>
+      <td>54.029999</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1735420</th>
+      <td>1</td>
+      <td>2990</td>
+      <td>22.99075</td>
+      <td>2.737132</td>
+      <td>595.630005</td>
+    </tr>
+    <tr>
+      <th>1735421</th>
+      <td>1</td>
+      <td>2990</td>
+      <td>22.99075</td>
+      <td>1.623667</td>
+      <td>596.559998</td>
+    </tr>
+    <tr>
+      <th>1735422</th>
+      <td>1</td>
+      <td>2990</td>
+      <td>22.99075</td>
+      <td>3.173591</td>
+      <td>597.719971</td>
+    </tr>
+    <tr>
+      <th>1735423</th>
+      <td>1</td>
+      <td>2990</td>
+      <td>22.99075</td>
+      <td>2.930570</td>
+      <td>598.669983</td>
+    </tr>
+    <tr>
+      <th>1735424</th>
+      <td>1</td>
+      <td>2990</td>
+      <td>22.99075</td>
+      <td>1.037758</td>
+      <td>599.260010</td>
+    </tr>
+  </tbody>
+</table>
+</pre>
+
+  </div>
+
 </div>
 
-If you have listed the metabolites (with mz target) you want to analyze in the config file, run `extract_xic()` to filter the mz
+### Quality Control plots
+To plot and visualize basic quality control plots, use `plot_chromatogram('tic')` to show Total Ion Chromatograms (TIC plots)
+```python
+example.plot_chromatogram("tic")
+```
+<img src="git_images/SL011_EA_1_tic_chrom.png" width="450">
+<img src="git_images/SL011_MB_1_tic_chrom.png" width="450">
+<img src="git_images/SL011_HS_1_tic_chrom.png" width="450">
+
 
 ## LICENSE
-License
 
 MIT License — see LICENSE for details.
