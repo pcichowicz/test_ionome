@@ -37,6 +37,7 @@ class Ionome:
         self._method = self.config["baseline"].get("method", "asls")
 
         self.data: dict[str,pd.DataFrame] = {} # long form dataframe
+        self.data_corrected: dict[str,pd.DataFrame] = {}
         self.df_xic: dict[str, dict[str, pd.DataFrame]] = {} # extracted dataframe
         self.chrom_data: dict[str, pd.DataFrame] = {}
 
@@ -126,18 +127,36 @@ class Ionome:
         baseline_cfg = self.config.get("baseline", {})
         log_method_entry()
 
-        print(f"\t> Correcting baseline using '{baseline_cfg['method']}'")
-        for sample, metabolite in self.df_xic.items():
 
-            for metabolite_name in metabolite:
-                y_arr = metabolite[metabolite_name]['intensity']
+        for sample, ddf in self.data.items():
+            print(f"\t> Correcting baseline for sample {sample}...")
+            sleep(1)
 
-                correction_params = baseline_cfg.get(self._method)
+            skeleton_df = ddf[['scan_id', 'retention_time']].drop_duplicates()
+            tic = ddf.groupby('scan_id')['intensity'].sum().reset_index(name='tic')
+            y = tic['tic'].to_numpy()
+            correction_params = baseline_cfg.get(self._method)
+            baseline, corrected = BaselineCorrection().asls(y, **correction_params)
+            clean_df = skeleton_df.merge(tic, on='scan_id')
+            clean_df['baseline'] = baseline
+            clean_df['corrected'] = corrected
 
-                baseline, corrected= BaselineCorrection().asls(y_arr, **correction_params)
+            self.data_corrected[sample] = clean_df
 
-                metabolite[metabolite_name]['baseline'] = baseline
-                metabolite[metabolite_name]['corrected'] = corrected
+        # print(f"\t> Correcting baseline using '{baseline_cfg['method']}'")
+        # for sample, metabolite in self.df_xic.items():
+        #     print(sample, metabolite)
+        #     for metabolite_name in metabolite:
+        #         print(metabolite_name, metabolite[metabolite_name])
+                # tic = df.groupby("scan_id")["intensity"].sum().reset_index(name="tic")
+                # y_arr = metabolite[metabolite_name]['intensity']
+
+                # correction_params = baseline_cfg.get(self._method)
+                #
+                # baseline, corrected= BaselineCorrection().asls(y_arr, **correction_params)
+                #
+                # metabolite[metabolite_name]['baseline'] = baseline
+                # metabolite[metabolite_name]['corrected'] = corrected
 
         # for sample in self.sample_list:
         #     sleep(0.2)
@@ -253,12 +272,13 @@ class Ionome:
 
         for sample in self.sample_list:
             print(f"\t> Plotting chromatogram for sample {sample}...")
-            print(self.data[sample])
 
             chrom = Chromatograms(
                 sample,
-                self.data[sample],
-                self.df_xic
+                data_df=self.data[sample],
+                data_corrected=self.data_corrected[sample],
+                df_xic = self.df_xic[sample],
+                unmixed_chromatogram_array=self.data_unmixed_chromatogram,
             )
 
             plot_map = {
@@ -266,6 +286,7 @@ class Ionome:
                 "corrected": chrom.plot_corrected,
                 "tic_bpc": chrom.plot_tic_and_bpc,
                 "decon": chrom.plot_deconvolution,
+                "xic": chrom.plot_xic,
 
             }
 

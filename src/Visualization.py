@@ -8,8 +8,10 @@ from matplotlib import image as mpimg
 
 
 class Chromatograms:
-    def __init__(self,sample_id, data_df, unmixed_chromatogram_array: np.ndarray or None):
+    def __init__(self,sample_id, data_df,data_corrected,df_xic, unmixed_chromatogram_array: np.ndarray or None):
         self.data_df = data_df
+        self.data_corrected = data_corrected
+        self.df_xic = df_xic
         self.unmixed_array = unmixed_chromatogram_array
         self.sample_id = sample_id
 
@@ -83,15 +85,30 @@ class Chromatograms:
                                 )
 
     def plot_corrected(self,save_path, **plot_kwargs):
-
+        df = self.data_corrected
         self._plot_chromatogram("retention_time",
                                 "corrected",
+                                data_df = df,
                                 title= f"{self.sample_id} - Total Ion Chromatogram",
                                 xlabel= "Retention Time (min)",
                                 ylabel= "Total Ion Intensity (corrected)",
                                 save_path= save_path,
                                 **plot_kwargs
                                 )
+
+    def plot_xic(self,save_path, **plot_kwargs):
+        df = self.df_xic
+        for metabolite, data_df in df.items():
+            new_save_path = Path(str(save_path).replace(".png", f"_{metabolite}.png"))
+            self._plot_chromatogram("retention_time",
+                                    "intensity",
+                                    data_df = data_df,
+                                    title= f"{self.sample_id} - {metabolite} - Extracted Ion Chromatogram",
+                                    xlabel= "Retention Time (min)",
+                                    ylabel= "Ion Intensity",
+                                    save_path= new_save_path,
+                                    **plot_kwargs
+                                    )
 
     def plot_tic_and_bpc(self,save_path,**plot_kwargs):
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
