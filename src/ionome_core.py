@@ -8,7 +8,7 @@ from src.preprocess import MzmlParser
 from src.correct_baseline import BaselineCorrection
 from src.PeakDetection import PeakDetection
 from src.Visualization import Chromatograms
-from src.paths import CACHED_DIR
+from src.paths import CACHED_DIR, RESULTS_DIR
 from time import sleep
 from src.helpers import log_method_entry
 
@@ -93,7 +93,7 @@ class Ionome:
             print(f"\t> Loading XIC cached data for sample(s) {list(self.sample_list.keys())}")
             with open(xic_df_cache, "rb") as f:
                 self.df_xic = pickle.load(f)
-            return self
+            return self.df_xic
 
         #Extract XIC data if no cached
         print(f"\t>Extracting mz targets for analysis...")
@@ -120,8 +120,7 @@ class Ionome:
         with open(xic_df_cache, "wb") as f:
             pickle.dump(self.df_xic, f)
 
-        print(f">XIC extracted and cached")
-        return self
+        return self.df_xic
 
     def correct_baseline(self):
         baseline_cfg = self.config.get("baseline", {})
@@ -249,20 +248,30 @@ class Ionome:
         Default is TIC plot.
         """
 
+        output_path = {}
         chrom_plots: list = []
 
         for sample in self.sample_list:
+            print(f"\t> Plotting chromatogram for sample {sample}...")
+            print(self.data[sample])
 
-            # plot_chromatogram = Chromatograms(sample,self.chrom_data[sample], self.data_unmixed_chromatogram[sample])
-            plot_chromatogram = Chromatograms(sample,self.data, self.data_unmixed_chromatogram[sample])
+            chrom = Chromatograms(
+                sample,
+                self.data[sample],
+                self.df_xic
+            )
+
             plot_map = {
-                "tic": plot_chromatogram.plot_tic,
-                "corrected": plot_chromatogram.plot_corrected,
-                "tic_bpc": plot_chromatogram.plot_tic_and_bpc,
-                "decon": plot_chromatogram.plot_deconvolution,
+                "tic": chrom.plot_tic,
+                "corrected": chrom.plot_corrected,
+                "tic_bpc": chrom.plot_tic_and_bpc,
+                "decon": chrom.plot_deconvolution,
 
             }
-            chrom_plots.append(plot_map[type_plot]())
+
+            out_dir = RESULTS_DIR / f"{sample}_{type_plot}_chrom.png"
+
+            chrom_plots.append(plot_map[type_plot](out_dir))
 
         return chrom_plots
 

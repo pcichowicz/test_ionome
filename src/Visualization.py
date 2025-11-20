@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
+from pathlib import Path
+
+from matplotlib import image as mpimg
 
 
 class Chromatograms:
@@ -13,15 +16,18 @@ class Chromatograms:
     def _plot_chromatogram(self,
                            x,
                            y,
+                           data_df = None,
                            ax=None,
                            fig_size=(10, 5),
                            title="",
                            xlabel="",
                            ylabel="",
                            save_path=None,
+                           show = True,
                            **plot_kwargs):
 
-        # fig,ax = plt.subplots(figsize=fig_size)
+        if data_df is None:
+            data_df = self.data_df
 
         # remove plot_kwargs from args
         xlim = plot_kwargs.pop("xlim", None)
@@ -37,8 +43,8 @@ class Chromatograms:
         ax.set_ylabel(ylabel)
         ax.grid(True, linestyle="-", alpha=0.3)
 
-        x_vals = self.data_df[x].values
-        y_vals = self.data_df[y].values
+        x_vals = data_df[x].values
+        y_vals = data_df[y].values
 
 
         ax.plot(x_vals, y_vals, color = "black")
@@ -49,33 +55,45 @@ class Chromatograms:
         if ylim:
             ax.set_ylim(ylim)
 
-        if own_figure:
+        if save_path:
+            save_path = Path(save_path)
+            # save_path.parent.mkdir(parents=True, exist_ok=True)
+            plt.savefig(save_path, dpi=300)
 
-            plt.show()
+        if own_figure:
+            if show:
+                plt.show()
             plt.close()
 
+        return save_path
 
-    def plot_tic(self, **plot_kwargs):
+
+    def plot_tic(self, save_path, **plot_kwargs):
+
+        df = self.compute_tic_bpc()
 
         self._plot_chromatogram("retention_time",
                                 "tic",
+                                data_df = df,
                                 title= f"{self.sample_id} - Total Ion Chromatogram",
                                 xlabel= "Retention Time (min)",
                                 ylabel= "Total Ion Intensity",
+                                save_path= save_path,
                                 **plot_kwargs
                                 )
 
-    def plot_corrected(self, **plot_kwargs):
+    def plot_corrected(self,save_path, **plot_kwargs):
 
         self._plot_chromatogram("retention_time",
                                 "corrected",
                                 title= f"{self.sample_id} - Total Ion Chromatogram",
                                 xlabel= "Retention Time (min)",
                                 ylabel= "Total Ion Intensity (corrected)",
+                                save_path= save_path,
                                 **plot_kwargs
                                 )
 
-    def plot_tic_and_bpc(self,**plot_kwargs):
+    def plot_tic_and_bpc(self,save_path,**plot_kwargs):
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 
         self._plot_chromatogram(
@@ -139,5 +157,21 @@ class Chromatograms:
 
         plt.show()
         plt.close(fig)
+
+    def compute_tic_bpc(self):
+        df = self.data_df
+
+        # TIC = sum of all intensities per scan
+        tic = df.groupby("scan_id")["intensity"].sum().reset_index(name="tic")
+
+        # BPC = max intensity per scan
+        bpc = df.groupby("scan_id")["intensity"].max().reset_index(name="bpc")
+
+        # single df with RT, TIC, BPC
+        rt = df[["scan_id", "retention_time"]].drop_duplicates()
+
+        merged = rt.merge(tic, on="scan_id").merge(bpc, on="scan_id")
+
+        return merged.sort_values("retention_time")
 
 _colors = sns.color_palette("deep", 15)
