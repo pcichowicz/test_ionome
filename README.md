@@ -1,4 +1,6 @@
 # < Ionome >
+
+---
 **Ionome** is an LC–MS data analysis pipeline designed for exploratory metabolomics, peak extraction, and automated chromatographic processing.  
 The long-term goal of this project is to provide a modular, reproducible workflow for working with mzML files, extracting XICs, computing TIC/BPC, managing datasets, and generating a final report.
 
@@ -16,9 +18,10 @@ More components (peak deconvolution, automated annotation, QC workflows, dataset
 **Ver 1.0.0:**
 
 mzML loading  
+Save parsed mzML files as `.parquet` files for caching  
 TIC/BPC computation  
 Basic XIC extraction  
-Quality control plots (Total Ion Chormatograms & Base Peak Chromatograms)  
+Quality control plots (Total Ion Chromatograms & Base Peak Chromatograms)  
 Preliminary metadata dictionaries  
 Jupyter notebook exploration  
 
@@ -37,6 +40,7 @@ Auto-QC metrics (noise, intensity drift, retention time shifts)
 Nat Microbiol. 2024 Jan;9(1):55-69. Epub 2024 Jan 4.  
 https://massive.ucsd.edu/ProteoSAFe/dataset_files.jsp?task=365b6b62ef34444c821aff7d6ff9e499#%7B%22table_sort_history%22%3A%22main.collection_asc%22%2C%22main.collection_input%22%3A%22peak%7C%7CEXACT%22%7D
 
+---
 ## Installation
 **Status:** _Currently in development — not yet distributed as a package._
 
@@ -51,8 +55,10 @@ tqdm~=4.67.1
 pyarrow
 fastparquet
 
+---
 ## Usage
-Quick step-by-step for how the package works.    
+Quick step-by-step for how the package works. 
+
 ### Repository Structure
 ```
 ionome/  
@@ -186,7 +192,7 @@ In order for this to work, you should have two files located in the `config` dir
     ```
   </details>  
 
-You can then run `Ionome` class object to initialize the workflow.
+Run `Ionome` class object to initialize the workflow.
 
 ```python
 from src.ionome_core import Ionome
@@ -196,7 +202,7 @@ example = Ionome(run_id="SL011", samples="samples_SL011.yaml")
     >[2025-11-17 06:11:16][Ionome.__init__]
     	Initializing run ID SL011 for analysis
 
-Then you can load the spectra data from mzml files using `load.data()`:
+Load the spectra data from mzml files using `load.data()`:
 
 ```python
 example.load_data()
@@ -212,7 +218,7 @@ example.load_data()
     	...
 
 
-You can also check each individual dataframes by `.data['sample_name']`
+Check each individual dataframes by `.data['sample_name']`
 
 ```python
 ea_1_df = example.data['SL011_EA_1'] # extraction blank control
@@ -252,13 +258,46 @@ hs_1_df
 | 1735424 |        1 |    2990 |        22.9907 |   1.03776 | 599.26 |
 
 ### Quality Control plots
-To plot and visualize basic quality control plots, use `plot_chromatogram('tic')` to show Total Ion Chromatograms (TIC plots)
+Plot and visualize basic quality control plots, use `plot_chromatogram('tic')` to show Total Ion Chromatograms (TIC plots)
+
 ```python
 example.plot_chromatogram("tic")
 ```
 <img src="git_images/SL011_EA_1_tic_chrom.png" width="1000">
 <img src="git_images/SL011_MB_1_tic_chrom.png" width="1000">
 <img src="git_images/SL011_HS_1_tic_chrom.png" width="1000">
+
+### Baseline correction 
+> (work in progress)
+
+### Extracted Ion Chromatograms
+Extract specific mass-to-charge (m/z) values of interest for analysis using `extract_xic()`  
+Access specific metabolite dataframe of extracted m/z values with `df_xic['sample']['metabolite']`
+
+```python
+example.extract_xic()
+example.df_xic["SL011_HS_1"]["cinnamate"]
+```
+|      | scan_id | retention_time | intensity |
+|-----:|--------:|---------------:|----------:|
+|    0 |       1 |        4.29338 |         0 |
+|    1 |       2 |        4.29963 |         0 |
+|    2 |       3 |        4.30588 |         0 |
+|    3 |       4 |        4.31215 |   70983.5 |
+|    4 |       5 |         4.3184 |    153703 |
+|  ... |     ... |            ... |       ... |
+| 2985 |    2986 |        22.9657 |         0 |
+| 2986 |    2987 |         22.972 |         0 |
+| 2987 |    2988 |        22.9782 |         0 |
+| 2988 |    2989 |        22.9845 |         0 |
+| 2989 |    2990 |        22.9907 |         0 |
+
+Extracted Ion Chromatogram using `plot_chromatogram('xic')`
+```python
+example.plot_chromatogram('xic')
+```
+
+<img src="git_images/SL011_HS_1_xic_chrom_p-coumerate.png" width="1000">
 
 
 ## LICENSE
