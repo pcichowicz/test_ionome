@@ -15,6 +15,7 @@ venv/
 # Jupyter
 .ipynb_checkpoints
 *.nbconvert.ipynb
+/notebooks
 
 # OS files
 .DS_Store
