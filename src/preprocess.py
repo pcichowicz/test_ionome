@@ -5,10 +5,11 @@ Returns dataframe
 import pandas as pd
 import pymzml
 from src.paths import DATA_DIR, CACHED_DIR
+from pathlib import Path
 
 class MzmlParser:
-    def __init__(self, mzml_file: dict, rerun, **parser_cfg):
-        self.mzml_file = mzml_file["file"]
+    def __init__(self, mzml_file: str | Path, rerun, **parser_cfg):
+        self.mzml_file = mzml_file
         self._rerun: bool = rerun
         self._settings = parser_cfg
 
@@ -48,7 +49,7 @@ class MzmlParser:
 
         # If cached file exists and rerun=False → load from parquet
         if parquet_path.exists() and not self._rerun:
-            print(f"\t Using cached file")
+            print(f"\t Using cached file\n")
             return pd.read_parquet(parquet_path)
 
         # Otherwise, parse mzML → DataFrame
@@ -56,7 +57,7 @@ class MzmlParser:
         master_df = self.parse_mzml_file(**kwargs)
 
         # Save to Parquet, reuse if 'rerun' is False
-        print(f"\t Caching spectra data")
+        print(f"\t Caching spectra data\n")
         master_df.to_parquet(parquet_path, index=False)
 
         return master_df

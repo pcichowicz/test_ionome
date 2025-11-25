@@ -1,4 +1,5 @@
 import yaml
+from dataclasses import dataclass, field
 from pathlib import Path
 import pandas as pd
 
@@ -23,3 +24,27 @@ class SampleMetaData:
 
     def __repr__(self):
         return f"<SampleMetaData>:(sample_list={self.sample_list})"
+
+@dataclass
+class SampleData:
+    unique_id: str
+    path: Path | str | None = None
+
+    #metadata
+    batch_id: str | None = None
+    condition: str | None = None
+    replicate:str | None = None
+    description: str | None = None
+
+    meta:  dict = field(default_factory=dict)
+
+    raw: pd.DataFrame | None = None
+    baseline_corrected: pd.DataFrame | None = None
+
+    xic: dict[str, pd.DataFrame] = field(default_factory=dict)
+    chromatograms: dict[str, pd.DataFrame] = field(default_factory=dict)
+    peaks: dict[str, pd.DataFrame] = field(default_factory=dict)
+
+    def has_raw(self): return self.raw is not None
+    def has_baseline(self): return self.baseline_corrected is not None
+    def has_xic(self): return bool(self.xic)

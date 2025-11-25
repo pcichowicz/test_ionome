@@ -9,9 +9,9 @@ def main():
     pd.set_option('display.max_columns', None)
     first = Ionome(run_id="SL005", samples="samples_SL011.yaml")
     first.load_data()
-    first.correct_baseline()
-    first.extract_xic()
-    first.plot_chromatogram("xic")
+    # first.correct_baseline()
+    # first.extract_xic()
+    # first.plot_chromatogram("xic")
 
 if __name__ == "__main__":
     main() 

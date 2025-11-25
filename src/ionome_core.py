@@ -3,7 +3,7 @@ import time
 
 import pandas as pd
 
-from src.SampleMetaData import SampleMetaData
+from src.SampleMetaData import SampleMetaData, SampleData
 from src.preprocess import MzmlParser
 from src.correct_baseline import BaselineCorrection
 from src.PeakDetection import PeakDetection
@@ -18,7 +18,10 @@ import yaml
 import pickle
 
 class Ionome:
-    """Encapsulates the mzML file analysis"""
+    """
+    Encapsulates the mzML file analysis
+    orchestrator class
+    """
 
     def __init__(self,
                  run_id: str,
@@ -31,39 +34,43 @@ class Ionome:
             self.config = yaml.safe_load(f)
 
         self.run_id: str = run_id
-        self.sample_list = SampleMetaData(samples).meta_by_unique
+
+        # config yaml settings
         self.target_mz_list = self.config.get("target_mz_list", [])
         self.rerun: bool = self.config.get("rerun", False)
         self._method = self.config["baseline"].get("method", "asls")
 
-        self.data: dict[str,pd.DataFrame] = {} # long form dataframe
-        self.data_corrected: dict[str,pd.DataFrame] = {}
-        self.df_xic: dict[str, dict[str, pd.DataFrame]] = {} # extracted dataframe
-        self.chrom_data: dict[str, pd.DataFrame] = {}
+        # sample yaml metadata
+        self.sample_metadata = self._load_sample_yaml(samples)
 
-        self.data_window_prop = None
-        self.data_peak_prop = None
-        self.data_unmixed_chromatogram = None
+        # SampleData objects for each sample
+        self.samples = {}
+        for uid, meta in self.sample_metadata.items():
+            sample = SampleData(unique_id = uid, path = meta["file"],
+
+            batch_id = meta["id"],
+            condition = meta["condition"],
+            replicate = meta["replicate"],
+            description = meta["description"],
+
+            meta = meta
+            )
+            self.samples[uid] = sample
 
         log_method_entry()
-        print(f"\tInitializing run ID {self.run_id} for analysis")
+        print(f"\tInitializing run ID {self.run_id} with {len(self.samples)} samples:")
+        for s in self.samples.values():
+            print(f"\t → {s.unique_id} ({s.description}, rep {s.replicate})")
 
-    def __repr__(self):
-        return (f"<Ionome>\n(run_id = {self.run_id}"
-                f"\nsample_list = {self.sample_list}"
-                f"\ndata = {self.data}"
-                f"\ndata_window_prop = {self.data_window_prop}"
-                f"\ndata_unmixed_chromatogram = {self.data_unmixed_chromatogram}"
-                f"\ntarget_mz_list = {self.target_mz_list}"
-                f"\nrerun = {self.rerun}"
-                f"\nmethod = {self._method})")
+    def _load_sample_yaml(self,file):
+        with open(f"../config/{file}", "r") as f:
+            y = yaml.safe_load(f)
 
-    def __str__(self):
-        report = " Analysis Report \n"
-
-        # for key in self.__dict__.keys():
-        #     report += f"{key, getattr(self, key)}\n"
-        return report
+        meta_by_unique_id = {}
+        for sample in y["samples"]:
+            unique_id = sample["unique_id"]
+            meta_by_unique_id[unique_id] = sample
+        return meta_by_unique_id
 
     def load_data(self, **kwargs):
         """Loads the mzML file, will parse mzML file if parquet file is not already cached,
@@ -72,34 +79,37 @@ class Ionome:
         parser_cfg = self.config.get("parser", {})
         log_method_entry()
 
-        for sample in self.sample_list:
-            print(f"\t> Loading spectra data for sample {sample}...")
-            sleep(1)
+        for sample, metadata in self.samples.items():
+            print(f"\t> Loading spectra data for sample {sample} ...")
+            sleep(0.2)
 
-            parser = MzmlParser(self.sample_list[sample], rerun = self.rerun, **parser_cfg)
-            df_data = parser.parse_or_load_mzml(**kwargs)
-            self.data[sample] = df_data
+            parser = MzmlParser(metadata.path, rerun = self.rerun, **parser_cfg)
+            metadata.raw = parser.parse_or_load_mzml(**kwargs)
 
-    def extract_xic(self):
+    def extract_xic(self, resolution: str = "tol"):
 
         extract_xic_cfg = self.config.get("target_mz_params", {})
-        tol = extract_xic_cfg["tol"]
+
+        if resolution == "tol":
+            resolution = extract_xic_cfg["tol"]
+        else:
+            resolution = extract_xic_cfg["ppm"]
+
         log_method_entry()
 
-        self.df_xic = {}
         xic_df_cache = CACHED_DIR / f"{self.run_id}_mz_target.pkl"
 
-        # load cached if exists
-        if xic_df_cache.exists() and not self.rerun:
-            print(f"\t> Loading XIC cached data for sample(s) {list(self.sample_list.keys())}")
-            with open(xic_df_cache, "rb") as f:
-                self.df_xic = pickle.load(f)
-            return self.df_xic
+        # # load cached if exists
+        # if xic_df_cache.exists() and not self.rerun:
+        #     print(f"\t> Loading XIC cached data for sample(s) {list(self.sample_list.keys())}")
+        #     with open(xic_df_cache, "rb") as f:
+        #         self.df_xic = pickle.load(f)
+        #     return self.df_xic
 
         #Extract XIC data if no cached
         print(f"\t>Extracting mz targets for analysis...")
 
-        for sample in self.sample_list:
+        for sample in self.samples:
             self.df_xic[sample] = {}
 
             for name, mz_value in self.target_mz_list.items():
