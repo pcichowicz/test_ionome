@@ -22,8 +22,8 @@ target_mz_list:
 
 # tolerance for mz detection
 target_mz_params:
-  ppm: 5
-  tol: 0.01
+  ppm: 1
+  tol: 0.1
 
 # Parsing and preprocessing of mzML files
 parser:

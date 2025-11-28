@@ -46,15 +46,15 @@ class Ionome:
         # SampleData objects for each sample
         self.samples = {}
         for uid, meta in self.sample_metadata.items():
-            sample = SampleData(unique_id = uid, path = meta["file"],
-
-            batch_id = meta["id"],
-            condition = meta["condition"],
-            replicate = meta["replicate"],
-            description = meta["description"],
-
-            meta = meta
-            )
+            sample = SampleData(
+                unique_id = uid,
+                path = meta["file"],
+                batch_id = meta["id"],
+                condition = meta["condition"],
+                replicate = meta["replicate"],
+                description = meta["description"],
+                meta = meta
+                )
             self.samples[uid] = sample
 
         log_method_entry()
@@ -81,57 +81,55 @@ class Ionome:
 
         for sample, metadata in self.samples.items():
             print(f"\t> Loading spectra data for sample {sample} ...")
-            sleep(0.2)
+            # sleep(0.2)
 
             parser = MzmlParser(metadata.path, rerun = self.rerun, **parser_cfg)
             metadata.raw = parser.parse_or_load_mzml(**kwargs)
 
-    def extract_xic(self, resolution: str = "tol"):
+    def extract_xic(self, tolerance_type: str = "tol"):
 
         extract_xic_cfg = self.config.get("target_mz_params", {})
 
-        if resolution == "tol":
-            resolution = extract_xic_cfg["tol"]
+        # low resolution -> 'tol'
+        # high resolution -> 'ppm'
+
+        if tolerance_type == "tol":
+            tolerance_tol = extract_xic_cfg["tol"]
         else:
-            resolution = extract_xic_cfg["ppm"]
+            tolerance_ppm = extract_xic_cfg["ppm"]
 
         log_method_entry()
 
         xic_df_cache = CACHED_DIR / f"{self.run_id}_mz_target.pkl"
 
-        # # load cached if exists
-        # if xic_df_cache.exists() and not self.rerun:
-        #     print(f"\t> Loading XIC cached data for sample(s) {list(self.sample_list.keys())}")
-        #     with open(xic_df_cache, "rb") as f:
-        #         self.df_xic = pickle.load(f)
-        #     return self.df_xic
-
         #Extract XIC data if no cached
         print(f"\t>Extracting mz targets for analysis...")
 
         for sample in self.samples:
-            self.df_xic[sample] = {}
-
             for name, mz_value in self.target_mz_list.items():
-
-                xic_df = self.data[sample][
-                    (self.data[sample]['mz'] >= mz_value - tol) &
-                    (self.data[sample]['mz'] <= mz_value + tol)
+                print(f"\t> Extracting {name}...")
+                if tolerance_type == "ppm":
+                    tol_da = mz_value * tolerance_ppm / 1e6
+                else:
+                    tol_da = tolerance_tol
+                xic_df = self.samples[sample].raw[
+                    (self.samples[sample].raw["mz"] >= mz_value - tol_da) &
+                    (self.samples[sample].raw["mz"] <= mz_value + tol_da)
                 ].copy()
+                print(f"{name}: tol={tol_da:.6f} Da, hits={len(xic_df)}")
+                print(xic_df[['mz', 'intensity']].head())
 
-                xic_df_all = self.data[sample][['scan_id', 'retention_time']].drop_duplicates()
+                xic_df_all = self.samples[sample].raw[['scan_id', 'retention_time']].drop_duplicates()
                 xic_final = xic_df_all.merge(xic_df[['scan_id', 'intensity']],
                                              on='scan_id',
                                              how='left')
                 xic_final['intensity'] = xic_final['intensity'].fillna(0)
                 xic_final = xic_final.sort_values("retention_time").reset_index(drop=True)
 
-                self.df_xic[sample][name] = xic_final
+                self.samples[sample].xic[name] = xic_final
 
-        with open(xic_df_cache, "wb") as f:
-            pickle.dump(self.df_xic, f)
-
-        return self.df_xic
+        # with open(xic_df_cache, "wb") as f:
+        #     pickle.dump(self.samples[sample].xic, f)
 
     def correct_baseline(self):
         baseline_cfg = self.config.get("baseline", {})
