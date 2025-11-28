@@ -3,7 +3,7 @@ import time
 
 import pandas as pd
 
-from src.SampleMetaData import SampleMetaData, SampleData
+from src.sampleData import SampleData
 from src.preprocess import MzmlParser
 from src.correct_baseline import BaselineCorrection
 from src.PeakDetection import PeakDetection
@@ -28,6 +28,7 @@ class Ionome:
                  samples: str | Path,
                  config_file: str ="config.yaml",
                  ):
+        log_method_entry()
 
         # Load yaml configurations
         with open(f"../config/{config_file}", "r") as f:
@@ -44,23 +45,23 @@ class Ionome:
         self.sample_metadata = self._load_sample_yaml(samples)
 
         # SampleData objects for each sample
+        # {unique id: SampleData}
         self.samples = {}
         for uid, meta in self.sample_metadata.items():
             sample = SampleData(
                 unique_id = uid,
-                path = meta["file"],
                 batch_id = meta["id"],
+                file = meta["file"],
                 condition = meta["condition"],
+                description=meta["description"],
                 replicate = meta["replicate"],
-                description = meta["description"],
-                meta = meta
+                species = meta["species"]
                 )
             self.samples[uid] = sample
 
-        log_method_entry()
         print(f"\tInitializing run ID {self.run_id} with {len(self.samples)} samples:")
         for s in self.samples.values():
-            print(f"\t → {s.unique_id} ({s.description}, rep {s.replicate})")
+            print(f"\t → {s.unique_id} ({s.description} | rep {s.replicate} | species {s.species})")
 
     def _load_sample_yaml(self,file):
         with open(f"../config/{file}", "r") as f:
@@ -75,66 +76,43 @@ class Ionome:
     def load_data(self, **kwargs):
         """Loads the mzML file, will parse mzML file if parquet file is not already cached,
         Will save cached parquet file upon first parse of mzML file"""
-
-        parser_cfg = self.config.get("parser", {})
         log_method_entry()
 
-        for sample, metadata in self.samples.items():
-            print(f"\t> Loading spectra data for sample {sample} ...")
+        parser_cfg = self.config.get("parser", {})
+
+        for uid, sampleData in self.samples.items():
+            print(f"\t> Loading spectra data for sample {uid} ...")
             # sleep(0.2)
 
-            parser = MzmlParser(metadata.path, rerun = self.rerun, **parser_cfg)
-            metadata.raw = parser.parse_or_load_mzml(**kwargs)
+            parser = MzmlParser(sampleData.file, rerun=self.rerun, **parser_cfg)
+            sampleData.raw = parser.parse_or_load_mzml(**kwargs)
 
-    def extract_xic(self, tolerance_type: str = "tol"):
+    def extract_quality_control(self):
+        log_method_entry()
+
+        for uid, sampleData in self.samples.items():
+            print(f"\t> Extracting TIC BPC data for sample {uid} ...")
+            sampleData.qc_df()
+
+    def extract_ion_chromatograms(self, tolerance_type: str = "tol"):
+        log_method_entry()
 
         extract_xic_cfg = self.config.get("target_mz_params", {})
 
         # low resolution -> 'tol'
         # high resolution -> 'ppm'
-
         if tolerance_type == "tol":
-            tolerance_tol = extract_xic_cfg["tol"]
+            tolerance = extract_xic_cfg["tol"]
         else:
-            tolerance_ppm = extract_xic_cfg["ppm"]
+            tolerance = extract_xic_cfg["ppm"]
 
-        log_method_entry()
-
-        xic_df_cache = CACHED_DIR / f"{self.run_id}_mz_target.pkl"
-
-        #Extract XIC data if no cached
-        print(f"\t>Extracting mz targets for analysis...")
-
-        for sample in self.samples:
-            for name, mz_value in self.target_mz_list.items():
-                print(f"\t> Extracting {name}...")
-                if tolerance_type == "ppm":
-                    tol_da = mz_value * tolerance_ppm / 1e6
-                else:
-                    tol_da = tolerance_tol
-                xic_df = self.samples[sample].raw[
-                    (self.samples[sample].raw["mz"] >= mz_value - tol_da) &
-                    (self.samples[sample].raw["mz"] <= mz_value + tol_da)
-                ].copy()
-                print(f"{name}: tol={tol_da:.6f} Da, hits={len(xic_df)}")
-                print(xic_df[['mz', 'intensity']].head())
-
-                xic_df_all = self.samples[sample].raw[['scan_id', 'retention_time']].drop_duplicates()
-                xic_final = xic_df_all.merge(xic_df[['scan_id', 'intensity']],
-                                             on='scan_id',
-                                             how='left')
-                xic_final['intensity'] = xic_final['intensity'].fillna(0)
-                xic_final = xic_final.sort_values("retention_time").reset_index(drop=True)
-
-                self.samples[sample].xic[name] = xic_final
-
-        # with open(xic_df_cache, "wb") as f:
-        #     pickle.dump(self.samples[sample].xic, f)
+        for uid, sampleData in self.samples.items():
+            print(f"\t> Extracting XIC chromatogram data for sample {uid} ...")
+            sampleData.xic_df(target_list=self.target_mz_list, tol=tolerance)
 
     def correct_baseline(self):
         baseline_cfg = self.config.get("baseline", {})
         log_method_entry()
-
 
         for sample, ddf in self.data.items():
             print(f"\t> Correcting baseline for sample {sample}...")
@@ -303,5 +281,3 @@ class Ionome:
             chrom_plots.append(plot_map[type_plot](out_dir))
 
         return chrom_plots
-
-
