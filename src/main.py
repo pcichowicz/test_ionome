@@ -1,6 +1,9 @@
+import pprint
+
 import pandas as pd
 import pymzml
 from matplotlib import pyplot as plt
+from xml.etree import ElementTree as ET
 
 import numpy as np
 from src.ionome_core import Ionome
@@ -12,13 +15,81 @@ from scipy import sparse
 def main():
     # ----- Init -----
     pd.set_option('display.max_columns', None)
-    first = Ionome(run_id="SL005", samples="samples_SL011.yaml")
+    first = Ionome(run_id="SL2031", samples="samples_SL2031.yaml")
 
     #----------------------------------------------------------------
 
     # ----- Load data -----
     first.load_data()
 
+
+    ## ----------------------- ##
+    ## Metadata from mzML
+    ## ------------------------##
+    file_xml = "../data/raw_SL2031/018_20230825_SL2031__EL-cat_MS1_neg.mzML"
+    # ns = {'mzml': 'http://psi.hupo.org/ms/mzml'}
+    #
+    # tree = ET.parse(file_xml)
+    # root = tree.getroot()
+    #
+    # metadata = {}
+    # mmzl_root = root.find('mzml:mzML', ns)
+    # file_description = root.find('mzml:fileDescription', ns)
+    #
+    # if mmzl_root is not None:
+    #     file_description = mmzl_root.find('mzml:fileDescription', ns)
+    #
+    #     if file_description is not None:
+    #         metadata['file_description'] = {}
+    #         for cv_param in file_description.findall('.//mzml:cvParam', ns):
+    #             name = cv_param.attrib.get('name')
+    #             value = cv_param.attrib.get('value', 'N/A')
+    #             metadata['file_description'][name] = value
+    #
+    #
+    # pprint.pp(metadata)
+
+
+    # configs = []
+    # for inst in root.findall('.//mzml:instrumentConfiguration', ns):
+    #     config_id = inst.attrib.get('id')
+    #     components = {}
+    #
+    #     for comp in inst.findall('.//mzml:component', ns):
+    #         comp_type = comp.attrib.get('order')
+    #         cv = comp.find('mzml:cvParam', ns)
+    #         if cv is not None:
+    #             components[comp_type] = cv.attrib.get('name')
+    #
+    #     configs.append({
+    #         "id": config_id,
+    #         "components": components
+    #     })
+    # print(configs)
+    #
+    # source = []
+    # for src in root.findall('.//mzml:source', ns):
+    #     params = {}
+    #     for cv in src.findall('mzml:cvParam', ns):
+    #         params[cv.attrib['name']] = cv.attrib.get('value')
+    #     source.append(params)
+    # print(source)
+    #
+    # analyzers = []
+    # for an in root.findall('.//mzml:analyzer', ns):
+    #     params = {}
+    #     for cv in an.findall('mzml:cvParam', ns):
+    #         params[cv.attrib['name']] = cv.attrib.get('value')
+    #     analyzers.append(params)
+    # print(analyzers)
+    #
+    # detectors = []
+    # for det in root.findall('.//mzml:detector', ns):
+    #     params = {}
+    #     for cv in det.findall('mzml:cvParam', ns):
+    #         params[cv.attrib['name']] = cv.attrib.get('value')
+    #     detectors.append(params)
+    # print(detectors)
     # ----------------------------------------------------------------
 
     # ----- Quality control -----
@@ -36,8 +107,8 @@ def main():
     plt.legend()
     plt.tight_layout()
     plt.show()
-
-    # __ Peaks per scan - richness/noise __
+    #
+    # # __ Peaks per scan - richness/noise __
     plt.figure(figsize=(10, 3))
     for sampleData in first.samples.values():
         if sampleData.condition == "Treatment":
@@ -70,9 +141,11 @@ def main():
     # ----- XIC -----
     first.extract_ion_chromatograms()
 
+    # __ XIC Plot __
+    plt.figure(figsize=(10, 6))
     for sampleData in first.samples.values():
         if sampleData.condition == "Treatment":
-            plt.plot(sampleData.xic['ferulate']["retention_time"], sampleData.xic['ferulate']['intensity'], alpha=0.5,
+            plt.plot(sampleData.xic['catechin']["retention_time"], sampleData.xic['catechin']['intensity'], alpha=0.5,
                      label=sampleData.unique_id)
 
     plt.title(f"XIC - Overlay")
@@ -82,4 +155,4 @@ def main():
     plt.tight_layout()
     plt.show()
 if __name__ == "__main__":
-    main() 
+    main()

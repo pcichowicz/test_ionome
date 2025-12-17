@@ -49,8 +49,8 @@ class PeakDetection:
         for sign_mask, polarity in zip([amps > 0, amps < 0], [1,-1]):
             if np.any(sign_mask):
                 sig = np.array(self.dataframe["corrected"] if polarity == 1 else - self.dataframe["corrected"])
-                w_half, _, _ = calculate_peak_widths(sig, peak_indices, rel_height=0.5)
-                _, l_ips, r_ips = calculate_peak_widths(sig, peak_indices, rel_height=rel_height)
+                w_half, _, _, _ = calculate_peak_widths(sig, peak_indices, rel_height=0.5)
+                _, _, l_ips, r_ips = calculate_peak_widths(sig, peak_indices, rel_height=rel_height)
 
                 _widths[sign_mask] = w_half[sign_mask]
                 _left[sign_mask] = l_ips[sign_mask]

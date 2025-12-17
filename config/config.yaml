@@ -6,7 +6,7 @@ save_parquet: true
 verbose: true
 
 # Paths
-data_dir: "data/raw"
+data_dir: "data/raw_SL2031"
 cached_dir: "data/processed"
 results_dir: "results"
 logs_dir: "logs"
@@ -20,10 +20,16 @@ target_mz_list:
   ferulate: 193.05009
   sinapate: 223.06065
 
+target_mz_list2:
+  catechin: 290.07903
+  chlorogenate: 353.08725
+  rosmarinate: 359.07669
+  shikimate: 173.04499
+
 # tolerance for mz detection
 target_mz_params:
-  ppm: 1
-  tol: 0.3
+  ppm: 3
+  da: 0.3
 
 # Parsing and preprocessing of mzML files
 parser:
@@ -33,8 +39,8 @@ parser:
 baseline:
   method: asls
   asls:
-    lambda: 1e5
-    p: 0.01
+    lambda: 1e6
+    p: 0.1
     niter: 10
     tol: 1e-6
   snip:
@@ -56,3 +62,4 @@ plotting:
   bpc: true
   xic: true
   save_figures: true
+

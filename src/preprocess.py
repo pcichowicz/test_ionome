@@ -4,19 +4,24 @@ Returns dataframe
 """
 import pandas as pd
 import pymzml
-from src.paths import DATA_DIR, CACHED_DIR
+from src.paths import output_path
 from pathlib import Path
 
 class MzmlParser:
-    def __init__(self, mzml_file: str | Path, rerun, **parser_cfg):
+    def __init__(self,
+                 mzml_file: str | Path,
+                 rerun,
+                 run_id,
+                 **parser_cfg):
         self.mzml_file = mzml_file
         self._rerun: bool = rerun
         self._settings = parser_cfg
+        self.run_id = run_id
 
     def parse_mzml_file(self, **kwargs):
-        mzml_file_path = DATA_DIR / self.mzml_file
+
         rows = []
-        reader = pymzml.run.Reader(mzml_file_path)
+        reader = pymzml.run.Reader(self.mzml_file)
         for spec in reader:
             if spec.ms_level != self._settings.get("ms_level"):
                 continue
@@ -45,19 +50,22 @@ class MzmlParser:
         pd.DataFrame
             Parsed chromatogram and peak data
         """
-        parquet_path = CACHED_DIR / self.mzml_file.replace(".mzML", ".parquet")
+        parquet_path = output_path(self.run_id, "cached_dir") / self.mzml_file.name.replace(".mzML",".parquet")
 
+        # parquet_path = self.mzml_file.with_suffix(".parquet")
         # If cached file exists and rerun=False → load from parquet
+
         if parquet_path.exists() and not self._rerun:
-            print(f"\t Using cached file\n")
+            print(f"\t \033[32m ✓ \033[0m{self.mzml_file.name}")
             return pd.read_parquet(parquet_path)
 
+
         # Otherwise, parse mzML → DataFrame
-        print(f"\t Parsing {self.mzml_file} ... ")
+        # print(f"\t Parsing {self.mzml_file.name} ... ")
         master_df = self.parse_mzml_file(**kwargs)
+        print(f"\t ✓ {self.mzml_file.name}")
 
         # Save to Parquet, reuse if 'rerun' is False
-        print(f"\t Caching spectra data\n")
         master_df.to_parquet(parquet_path, index=False)
 
         return master_df

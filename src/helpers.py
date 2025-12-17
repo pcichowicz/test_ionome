@@ -8,9 +8,9 @@ init(autoreset=True)
 from datetime import datetime
 
 def normalize_signal(intensity: np.ndarray) -> np.ndarray:
-    int_sign = np.sign(intensity)
-    norm = (intensity - intensity.min()) / (intensity.max() - intensity.min())
-    return int_sign * norm
+    # int_sign = np.sign(intensity)
+    # norm = (intensity - intensity.min()) / (intensity.max() - intensity.min())
+    return (intensity - intensity.min()) / (intensity.max() - intensity.min())
 
 def detect_peak_indices(signal: np.ndarray, prominence: float) -> np.ndarray:
     peaks, _ = scipy.signal.find_peaks(signal, prominence=prominence)
@@ -22,13 +22,17 @@ def calculate_peak_widths(intensity: np.ndarray, peak_indices: np.ndarray, rel_h
         widths, _, left_ips, right_ips = scipy.signal.peak_widths(intensity, peak_indices, rel_height=rel_height)
     return widths, left_ips.astype(int), right_ips.astype(int)
 
-def build_peak_ranges(_left, _right, norm_int_len: int, buffer: int) -> list[np.ndarray]:
-    ranges = []
-    for l, r in zip(_left, _right):
-        rnge = np.arange(int(l - buffer), int(r + buffer))
-        rnge = rnge[(rnge >= 0) & (rnge < norm_int_len)]
-        ranges.append(rnge)
-    return ranges
+def build_peak_ranges(_left, _right,
+                      # norm_int_len: int,
+                      # buffer: int
+                      ) -> list[np.ndarray]:
+    # ranges = []
+    # for l, r in zip(_left, _right):
+    #     rnge = np.arange(int(l), int(r + 1))
+    #     # rnge = rnge[(rnge >= 0) & (rnge < norm_int_len)]
+    #     ranges.append(rnge)
+
+    return [np.arange(l, r + 1) for l, r in zip(_left, _right)]
 
 def remove_subset_ranges(ranges: list[np.ndarray]) -> list[np.ndarray]:
     valid = [True] * len(ranges)
@@ -58,7 +62,7 @@ def assign_background_windows(window_df: pd.DataFrame) -> pd.DataFrame:
 
     diff = np.diff(tidx)
     split_inds = np.where(diff > 1)[0]
-
+    # print(split_inds)
     if len(split_inds) == 0:
         window_df.loc[bg.index, ["window_id", "window_type"]] = [1, "interpeak"]
         return window_df

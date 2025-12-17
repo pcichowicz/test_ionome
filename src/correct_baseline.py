@@ -39,8 +39,16 @@ class BaselineCorrection:
     def asls(self,y,**kwargs):
         # for k,v in kwargs.items():
         #     print(k,v)
-        """
-        Asymmetric Least Squares (AsLS) baseline correction.
+        """r
+        Implements an Asymmetric Least Squares Smoothing
+        baseline correction algorithm (P. Eilers, H. Boelens 2005)
+
+        Baseline Correction with Asymmetric Least Squares Smoothing
+        based on https://web.archive.org/web/20200914144852/https://github.com/vicngtor/BaySpecPlots
+
+        Baseline Correction with Asymmetric Least Squares Smoothing
+        Paul H. C. Eilers and Hans F.M. Boelens
+        October 21, 2005
 
         Parameters
         ----------
@@ -62,8 +70,8 @@ class BaselineCorrection:
         corrected : ndarray
             Baseline-corrected signal (y - baseline, clipped at 0).
         """
-        lam = float(kwargs.get('lam', 1e5))
-        p = float(kwargs.get('p', 0.01))
+        lam = float(kwargs.get('lam', 1e6))
+        p = float(kwargs.get('p', 0.1))
         niter = int(kwargs.get('niter', 10))
         tol = float(kwargs.get('tol', 1e-6))
 
@@ -72,55 +80,47 @@ class BaselineCorrection:
             y = np.asarray(y)
 
         L = len(y)  # number of points in signal
+        w = np.ones(L)
+        D = sparse.diags([1,-2,1],[0,-1,-2], shape=(L,L-2),format='csr')
+        DTD = D @ D.T
+
+        for i in range(niter):
+            W = sparse.spdiags(w,0,L,L)
+            Z = W + lam * DTD
+            z = spsolve(Z,W @ y)
+            w = p * (y > z) + (1-p) * (y < z)
+
+
+
 
         # Construct second-order difference matrix (D), this enforces "smoothness" of the baseline.
-        D = sparse.diags([1, -2, 1], [0, 1, 2], shape=(L - 2, L))
-        # D = sparse.diags([1, -2, 1], [0, -1, -2], shape=(L, L - 2))
-        DTD = D.T @ D  # Precompute D^T D (penalty term)
+        # D = sparse.diags([1, -2, 1], [0, 1, 2], shape=(L - 2, L))
 
-        # Initialize weights (all ones at start, size of y numpy array)
-        weights = np.ones(L)
-        baseline_asls = np.zeros(L)
+        # DTD = D.T @ D  # Precompute D^T D (penalty term)
+        #
+        # # Initialize weights (all ones at start, size of y numpy array)
+        # weights = np.ones(L)
+        # baseline_asls = np.zeros(L)
+        #
+        #
+        # # Iterative fitting
+        # for i in range(niter):
+        #     # Build diagonal weight matrix
+        #
+        #     W = sparse.diags(weights, 0,shape=(L,L), format="csr")
+        #
+        #     A = (W + lam * DTD).tocsr()
+        #     B = W @ y
+        #
+        #     # Solve linear system for baseline
+        #     b = spsolve(A, B)
 
-        # W = sparse.diags(weights, 0, format="csr")
-        # A = (W + lam * DTD).tocsr()
-        # b = spsolve(A, B)
 
-        # Iterative fitting
-        for i in range(niter):
-            # Build diagonal weight matrix
-            # W = sparse.diags(weights, 0)
-            W = sparse.diags(weights, 0, format="csr")
-            # Build system: (W + λ D^T * D), b = W * y
-            # A = W + lam * DTD
-            A = (W + lam * DTD).tocsr()
-            B = W @ y
-
-            # Solve linear system for baseline
-            b = spsolve(A, B)
-
-            # Check convergence
-            if np.linalg.norm(b - baseline_asls) / (np.linalg.norm(baseline_asls) + 1e-8) < tol:
-                baseline_asls = b
-                break
-
-            baseline_asls = b
-
-            # Update weights based on residuals
-            # Points above baseline (peaks) get weight p (small)
-            # Points below baseline get weight (1-p) (large)
-            residuals = y - baseline_asls
-            weights = p * (residuals > 0) + (1 - p) * (residuals <= 0)
-
-        # Step 3. Subtract baseline
-        # corrected_asls = y - baseline_asls
-        # corrected_asls[corrected_asls < 0] = 0  # clip negatives to zero
-
-        corrected_asls = y - baseline_asls
+        corrected_asls = y - z
         corrected_asls = np.maximum(corrected_asls, 0)
         corrected_asls[y == 0] = 0  # Do not invent signal where none existed
 
-        return baseline_asls, corrected_asls
+        return z, corrected_asls
 
     def snip(self,raw_df, **kwargs):
         # for k,v in kwargs.items():

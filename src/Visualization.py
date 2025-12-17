@@ -3,42 +3,33 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from src.sampleData import SampleData
 
 from matplotlib import image as mpimg
 
 
 class Chromatograms:
-    def __init__(self,sample_id, data_df,data_corrected,df_xic, unmixed_chromatogram_array: np.ndarray or None):
-        self.data_df = data_df
-        self.data_corrected = data_corrected
-        self.df_xic = df_xic
-        self.unmixed_array = unmixed_chromatogram_array
-        self.sample_id = sample_id
+    def __init__(self, sampledata: SampleData):
+        self.sampleData = sampledata
 
     def _plot_chromatogram(self,
-                           x,
-                           y,
+                           x:str,
+                           y:str | None = None,
+                           *,
                            data_df = None,
-                           ax=None,
-                           fig_size=(10, 5),
+                           series: list[dict] | None = None,
+                           ax = None,
                            title="",
                            xlabel="",
                            ylabel="",
-                           save_path=None,
-                           show = True,
                            **plot_kwargs):
 
-        if data_df is None:
-            data_df = self.data_df
+        if ax is None:
+            raise ValueError(f"ax must be provided")
 
         # remove plot_kwargs from args
         xlim = plot_kwargs.pop("xlim", None)
         ylim = plot_kwargs.pop("ylim", None)
-
-        own_figure = False
-        if ax is None:
-            fig, ax = plt.subplots(figsize=fig_size)
-            own_figure = True
 
         ax.set_title(title)
         ax.set_xlabel(xlabel)
@@ -46,92 +37,164 @@ class Chromatograms:
         ax.grid(True, linestyle="-", alpha=0.3)
 
         x_vals = data_df[x].values
-        y_vals = data_df[y].values
 
+        if series is None:
+            y_vals = data_df[y].values
+            ax.plot(x_vals, y_vals, color="black")
+        else:
+            for s in series:
+                ax.plot(data_df[s["y"]].values,
+                        label=s.get("label", s["y"]),
+                        color=s.get("color", None),
+                        linestyle=s.get("linestyle", "-"),
+                        alpha=s.get("alpha", 1  ),
+                        )
+                ax.legend()
 
-        ax.plot(x_vals, y_vals, color = "black")
-
-        plt.tight_layout()
         if xlim:
-            ax.set_xlim(xlim)
+            ax.xlim(xlim)
         if ylim:
-            ax.set_ylim(ylim)
+            ax.ylim(ylim)
 
-        if save_path:
-            save_path = Path(save_path)
-            # save_path.parent.mkdir(parents=True, exist_ok=True)
-            plt.savefig(save_path, dpi=300)
-
-        if own_figure:
-            if show:
-                plt.show()
-            plt.close()
-
-        return save_path
-
-
-    def plot_tic(self, save_path, **plot_kwargs):
-
-        df = self.compute_tic_bpc()
-
+    def plot_tic(self, save_path:str | None = None, **plot_kwargs):
+        fig, ax = plt.subplots(figsize=(10, 6))
         self._plot_chromatogram("retention_time",
                                 "tic",
-                                data_df = df,
-                                title= f"{self.sample_id} - Total Ion Chromatogram",
+                                data_df = self.sampleData.quality_control,
+                                ax = ax,
+                                title= f"{self.sampleData.unique_id} - Total Ion Chromatogram",
                                 xlabel= "Retention Time (min)",
                                 ylabel= "Total Ion Intensity",
                                 save_path= save_path,
                                 **plot_kwargs
                                 )
+        plt.tight_layout()
 
-    def plot_corrected(self,save_path, **plot_kwargs):
-        df = self.data_corrected
+        plt.show()
+        plt.close(fig)
+
+    def plot_bpc(self, save_path:str | None = None, **plot_kwargs):
+        fig, ax = plt.subplots(figsize=(10, 6))
         self._plot_chromatogram("retention_time",
-                                "corrected",
-                                data_df = df,
-                                title= f"{self.sample_id} - Total Ion Chromatogram",
+                                "bpc",
+                                ax = ax,
+                                data_df = self.sampleData.quality_control,
+                                title= f"{self.sampleData.unique_id} - Base Peak Chromatogram",
                                 xlabel= "Retention Time (min)",
-                                ylabel= "Total Ion Intensity (corrected)",
+                                ylabel= "Ion Intensity",
                                 save_path= save_path,
                                 **plot_kwargs
                                 )
+        plt.tight_layout()
 
-    def plot_xic(self,save_path, **plot_kwargs):
-        df = self.df_xic
-        for metabolite, data_df in df.items():
-            new_save_path = Path(str(save_path).replace(".png", f"_{metabolite}.png"))
+        plt.show()
+        plt.close(fig)
+
+    def plot_corrected(self,plot_types = ("tic","bpc"),save_path:str | None = None, **plot_kwargs):
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        if isinstance (plot_types, str):
+            plot_types = [plot_types]
+
+        for plot_type in plot_types:
+
+            series = [
+                {
+                    "y": plot_type,  # raw TIC
+                    "label": "Raw",
+                    "color": "black",
+                    "alpha": 0.6,
+                },
+                {
+                    "y": f"{plot_type}_baseline",  # baseline
+                    "label": "Baseline",
+                    "color": "red",
+                    "linestyle": "--",
+                },
+                {
+                    "y": f"{plot_type}_corrected",  # corrected
+                    "label": "Corrected",
+                    "color": "blue",
+                },
+            ]
+            col = f"{plot_type}_corrected"
+            if col not in self.sampleData.quality_control.columns:
+                print(f"\t\033[33m Column {col} not found in sample data. Run 'correct_baseline('{plot_type}'), skipping.\033[0m")
+                continue
+
             self._plot_chromatogram("retention_time",
-                                    "intensity",
-                                    data_df = data_df,
-                                    title= f"{self.sample_id} - {metabolite} - Extracted Ion Chromatogram",
+                                    series = series,
+                                    data_df = self.sampleData.quality_control,
+                                    ax = ax,
+                                    title= f"{self.sampleData.unique_id}\n Total Ion Chromatogram (Corrected)",
                                     xlabel= "Retention Time (min)",
-                                    ylabel= "Ion Intensity",
-                                    save_path= new_save_path,
+                                    ylabel= "Total Ion Intensity",
+                                    save_path= save_path,
                                     **plot_kwargs
                                     )
+        plt.tight_layout()
 
-    def plot_tic_and_bpc(self,save_path,**plot_kwargs):
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+        plt.show()
+        plt.close(fig)
+
+    def plot_xic(self,metabolites = "all",save_path:str | None = None, **plot_kwargs):
+        if self.sampleData.xic is None:
+            print(f"\t No XIC data available, Run 'extract_ion_chromatograms(), skipping.")
+            return
+
+        if metabolites == "all":
+            metabolites = list(self.sampleData.xic.keys())
+
+        for metabolite in metabolites:
+            if metabolite not in self.sampleData.xic:
+                print(f"\t XIC data for {metabolite} not found, skipping.")
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            self._plot_chromatogram("retention_time",
+                                    "intensity",
+                                    data_df =self.sampleData.xic[metabolite],
+                                    ax = ax,
+                                    title= f"{self.sampleData.unique_id} - {metabolite} - Extracted Ion Chromatogram",
+                                    xlabel= "Retention Time (min)",
+                                    ylabel= "Ion Intensity",
+                                    save_path= save_path,
+                                    **plot_kwargs
+                                    )
+            plt.tight_layout()
+
+            plt.show()
+            plt.close(fig)
+
+    def plot_tic_and_bpc(self,save_path: str | None = None,**plot_kwargs):
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 6))
 
         self._plot_chromatogram(
-            "retention_time", "tic",
-            ax=ax1,
+            "retention_time",
+            "tic",
+            ax = ax1,
+            data_df = self.sampleData.quality_control,
             title="Total Ion Chromatogram",
             xlabel="",  # Let bottom plot set x-label
             ylabel="Total ion intensity",
+            show = False,
             **plot_kwargs
         )
 
         self._plot_chromatogram(
-            "retention_time", "bpc",
+            "retention_time",
+            "bpc",
+            data_df = self.sampleData.quality_control,
             ax=ax2,
             title="Base Peak Chromatogram",
             xlabel="Retention time (min)",
             ylabel="Base peak intensity",
+            show = False,
             **plot_kwargs
         )
 
         plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path, dpi=300)
 
         plt.show()
         plt.close(fig)
