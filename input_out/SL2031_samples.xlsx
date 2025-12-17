@@ -1,0 +1,81 @@
+samples:
+- id: SL2031
+  file: 024_20230825_sl2031__sw-cat_ms1_neg.mzml
+  conditon: Treatment
+  replicate: 1
+  description: Sample
+  species: S. wadsworthensis
+  metadata:
+    description: Sample
+    species: S. wadsworthensis
+  unique_id: SL2031_Sample_1
+- id: SL2031
+  file: 025_20230825_sl2031__sw-cat_ms1_neg.mzml
+  conditon: Treatment
+  replicate: 2
+  description: Sample
+  species: S. wadsworthensis
+  metadata:
+    description: Sample
+    species: S. wadsworthensis
+  unique_id: SL2031_Sample_2
+- id: SL2031
+  file: 026_20230825_sl2031__sw-cat_mb_ms1_neg.mzml
+  conditon: Control
+  replicate: 1
+  description: Method blank
+  species: S. wadsworthensis
+  metadata:
+    description: Method Blank
+    species: S. wadsworthensis
+  unique_id: SL2031_Method-blank_1
+- id: SL2031
+  file: 026_20230825_sl2031__sw-cat_mb_ms2_neg.mzml
+  conditon: Control
+  replicate: 2
+  description: Method blank
+  species: S. wadsworthensis
+  metadata:
+    description: Method Blank
+    species: S. wadsworthensis
+  unique_id: SL2031_Method-blank_2
+- id: SL2031
+  file: 018_20230825_sl2031__el-cat_mb_ms1_neg.mzml
+  conditon: Treatment
+  replicate: 1
+  description: Sample
+  species: E. lenta
+  metadata:
+    description: Sample
+    species: E. lenta
+  unique_id: SL2031_Sample_1
+- id: SL2031
+  file: 019_20230825_sl2031__el-cat_mb_ms2_neg.mzml
+  conditon: Treatment
+  replicate: 2
+  description: Sample
+  species: E. lenta
+  metadata:
+    description: Sample
+    species: E. lenta
+  unique_id: SL2031_Sample_2
+- id: SL2031
+  file: 020_20230825_sl2031__el-cat_ms1_neg.mzml
+  conditon: Control
+  replicate: 1
+  description: Method blank
+  species: E. lenta
+  metadata:
+    description: Method Blank
+    species: E. lenta
+  unique_id: SL2031_Method-blank_1
+- id: SL2031
+  file: 021_20230825_sl2031__el-cat_mb2_neg.mzml
+  conditon: Control
+  replicate: 2
+  description: Method blank
+  species: E. lenta
+  metadata:
+    description: Method Blank
+    species: E. lenta
+  unique_id: SL2031_Method-blank_2
