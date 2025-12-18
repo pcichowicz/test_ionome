@@ -142,7 +142,7 @@ class Ionome:
                 sampleData.add_chromatograms(chromatogram, name, df)
             print(f"\t \033[32m ✓ \033[0m{sampleData.unique_id}")
 
-    def peak_d(self):
+    def peak_detection(self):
         log_method_entry()
         peak_detect_cfg = self.config.get("peak_detection", {})
 
@@ -153,7 +153,7 @@ class Ionome:
                     peak_detector = DetectPeaks(metabolite, xic_df, **peak_detect_cfg)
                     if metabolite == "catechin":
                         # print(f"\t> Peak detection for sample {sampleData.unique_id} | metabolite '{metabolite}'")
-                        peak_detector.detect_peaks()
+                        # peak_detector.detect_peaks()
                         window_df_props, peak_properties, unmixed_chromatogram = peak_detector.detect_peaks()
                         # print(window_df_props, peak_properties, unmixed_chromatogram, sep="\n\n")
                         sampleData.window_df_properties[metabolite] = window_df_props
@@ -165,7 +165,7 @@ class Ionome:
         Default is ....?.
         """
         log_method_entry()
-        print(f"Plotting Chromatograms")
+        print(f"\t> Plotting Chromatograms:")
         plot_cfg = self.config.get("plotting", {})
         plotting_params = plot_cfg.get("plotting_params", {})
 
@@ -194,7 +194,7 @@ class Ionome:
                     print(f"\t\033[32m Unknown plot \033[0m{plot}, skipping \033[0m")
                     continue
 
-                print(f"\t Plotting {plot} for {sampleData.unique_id}")
+                print(f"\t \033[32m ✓ \033[0m{plot} for {sampleData.unique_id}")
 
                 params = plotting_params.get(plot, {})
                 plot_func(**params)

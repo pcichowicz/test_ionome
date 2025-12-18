@@ -49,12 +49,13 @@ class Chromatograms:
                         linestyle=s.get("linestyle", "-"),
                         alpha=s.get("alpha", 1  ),
                         )
+                # ax.legend()
+            if series:
                 ax.legend()
-
         if xlim:
-            ax.xlim(xlim)
+            ax.set_xlim(xlim)
         if ylim:
-            ax.ylim(ylim)
+            ax.set_ylim(ylim)
 
     def plot_tic(self, save_path:str | None = None, **plot_kwargs):
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -62,9 +63,9 @@ class Chromatograms:
                                 "tic",
                                 data_df = self.sampleData.quality_control,
                                 ax = ax,
-                                title= f"{self.sampleData.unique_id} - Total Ion Chromatogram",
+                                title= f"Total Ion Chromatogram\n {self.sampleData.unique_id}",
                                 xlabel= "Retention Time (min)",
-                                ylabel= "Total Ion Intensity",
+                                ylabel= "Intensity",
                                 save_path= save_path,
                                 **plot_kwargs
                                 )
@@ -79,9 +80,9 @@ class Chromatograms:
                                 "bpc",
                                 ax = ax,
                                 data_df = self.sampleData.quality_control,
-                                title= f"{self.sampleData.unique_id} - Base Peak Chromatogram",
+                                title= f"Base Peak Chromatogram\n {self.sampleData.unique_id}",
                                 xlabel= "Retention Time (min)",
-                                ylabel= "Ion Intensity",
+                                ylabel= "Intensity",
                                 save_path= save_path,
                                 **plot_kwargs
                                 )
@@ -91,12 +92,14 @@ class Chromatograms:
         plt.close(fig)
 
     def plot_corrected(self,plot_types = ("tic","bpc"),save_path:str | None = None, **plot_kwargs):
-        fig, ax = plt.subplots(figsize=(10, 6))
+        # fig, ax = plt.subplots(figsize=(10, 6))
 
         if isinstance (plot_types, str):
             plot_types = [plot_types]
 
         for plot_type in plot_types:
+
+            fig, ax = plt.subplots(figsize=(10, 6))
 
             series = [
                 {
@@ -126,16 +129,16 @@ class Chromatograms:
                                     series = series,
                                     data_df = self.sampleData.quality_control,
                                     ax = ax,
-                                    title= f"{self.sampleData.unique_id}\n Total Ion Chromatogram (Corrected)",
+                                    title= f"{plot_type.upper()} Chromatogram (Corrected)\n {self.sampleData.unique_id}",
                                     xlabel= "Retention Time (min)",
-                                    ylabel= "Total Ion Intensity",
+                                    ylabel= f"Intensity - {plot_type}",
                                     save_path= save_path,
                                     **plot_kwargs
                                     )
-        plt.tight_layout()
+            plt.tight_layout()
 
-        plt.show()
-        plt.close(fig)
+            plt.show()
+            plt.close(fig)
 
     def plot_xic(self,metabolites = "all",save_path:str | None = None, **plot_kwargs):
         if self.sampleData.xic is None:
@@ -154,7 +157,7 @@ class Chromatograms:
                                     "intensity",
                                     data_df =self.sampleData.xic[metabolite],
                                     ax = ax,
-                                    title= f"{self.sampleData.unique_id} - {metabolite} - Extracted Ion Chromatogram",
+                                    title= f"Extracted Ion Chromatogram ({metabolite})\n {self.sampleData.unique_id}",
                                     xlabel= "Retention Time (min)",
                                     ylabel= "Ion Intensity",
                                     save_path= save_path,
@@ -192,6 +195,7 @@ class Chromatograms:
             **plot_kwargs
         )
 
+        plt.suptitle(f" TIC - BPC Overlay\n {self.sampleData.unique_id}")
         plt.tight_layout()
         if save_path:
             plt.savefig(save_path, dpi=300)

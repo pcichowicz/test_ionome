@@ -1,16 +1,23 @@
 # < Ionome >
 
 ---
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+![Static Badge](https://img.shields.io/badge/Version-1.0.0-blue)
+![Static Badge](https://img.shields.io/badge/pypi_package-In_development-yellow)
+
+
 **Ionome** is an LC–MS data analysis pipeline designed for exploratory metabolomics, peak extraction, and automated chromatographic processing.  
 The long-term goal of this project is to provide a modular, reproducible workflow for working with mzML files, extracting XICs, computing TIC/BPC, managing datasets, and generating a final report.
 
 This repository currently focuses on:
-- A clean, versioned Python codebase (starting with **Ver_1.0.0**)  
+- A clean, versioned Python codebase (starting with **Version 1.0.0**)  
 - Core readers/controllers for mzML processing  
-- Chromatogram generation (TIC, BPC, XIC)
-- Jupyter-based exploratory analysis
+- Chromatogram generation (TIC, BPC, XIC, baseline corrected chromatograms)
+- Peak detection
+- Summary report
 
-More components (peak deconvolution, automated annotation, QC workflows, dataset comparison utilities, and a full CLI) will be added as development continues.
+More components (automated annotation, QC workflows, dataset comparison utilities, and a full CLI) will be added as development continues.
 
 ---
 ## Development Status
@@ -20,25 +27,18 @@ More components (peak deconvolution, automated annotation, QC workflows, dataset
 mzML loading  
 Save parsed mzML files as `.parquet` files for caching  
 TIC/BPC computation  
-Basic XIC extraction  
-Quality control plots (Total Ion Chromatograms & Base Peak Chromatograms)  
-Preliminary metadata dictionaries  
-Jupyter notebook exploration  
+XIC extraction  
+Quality control plots (Total Ion Chromatograms & Base Peak Chromatograms & corrected plots)  
+Preliminary metadata summary
+Peak Detection
 
 **Next goals ( Ver 1.1.0 ) :**
 
-Peak detection and deconvolution (currently working on)  
 Compound annotation tables  
 Sample comparison (e.g., SL005 vs SL011)  
 Batch pipelines for entire datasets  
 Cleaner controller abstractions  
 Auto-QC metrics (noise, intensity drift, retention time shifts)  
-
-### Dataset using to test the package:
-> **Little AS, Younker IT, Schechter MS, Bernardino PN, Méheust R, Stemczynski J, Scorza K, Mullowney MW, Sharan D, Waligurski E, Smith R, Ramanswamy R, Leiter W, Moran D, McMillin M, Odenwald MA, Iavarone AT, Sidebottom AM, Sundararajan A, Pamer EG, Eren AM, Light SH.**  
-*Dietary- and host-derived metabolites are used by diverse gut bacteria for anaerobic respiration.*  
-Nat Microbiol. 2024 Jan;9(1):55-69. Epub 2024 Jan 4.  
-https://massive.ucsd.edu/ProteoSAFe/dataset_files.jsp?task=365b6b62ef34444c821aff7d6ff9e499#%7B%22table_sort_history%22%3A%22main.collection_asc%22%2C%22main.collection_input%22%3A%22peak%7C%7CEXACT%22%7D
 
 ---
 ## Installation
@@ -64,29 +64,18 @@ Quick step-by-step for how the package works.
 ionome/  
 │  
 ├── src/  
-│   ├── correct_baseline.py     # BaselineCorrection class  
-│   ├── helpers.py              # helper functions  
-│   ├── ionome_core.py          # class Controller  
-│   ├── main.py                 # XICExtractor and helpers  
-│   ├── paths.py                # path module  
-│   ├── peakDetection.py        # PeakDetection class  
-│   ├── preprocess.py           # MzmkParser class  
-│   ├── sampleMetaData.py       # SampleMetaData Controller
-│   └── visualization.py        # Chromatogram class  
-│  
-├── notebooks/  
-│   └── 01_explore_single_file.ipynb  
-│  
-├── data/  
-│   ├── raw/                   # raw mzML files (gitignored)  
-│   └── processed/             # cleaned or exported tables  
-│  
-├── scripts/  
-│   └── download_data.py       # pulls MassIVE files programmatically  
-│  
-├── results/                   # figures, exports (gitignored)  
-├── config/                    # metadata dictionaries, settings  
-├── docs/                      # expanded documentation  
+│   └── script files
+│   
+├── projects/                 
+│   └── runid/  
+│       ├── logs/             
+│       ├── processed/        
+│       ├── raw_data/         
+│       ├── results/          
+│       ├── config_runid.yam  
+│       └── samples_runid.yaml  
+│   
+├── config/                   
 ├── requirements.txt  
 ├── README.md  
 ├── LICENSE  
@@ -94,7 +83,9 @@ ionome/
 ```
 
 ### Running Ionome package
-In order for this to work, you should have two files located in the `config` directory:  
+In order for this to work, you should have two files located in the `config` directory:
+1. config.yaml
+2. run_id_samples.csv (run_id should be the name of your experiment/name of run,etc)
 - <details>
     <summary>see config example</summary>
 
@@ -103,27 +94,21 @@ In order for this to work, you should have two files located in the `config` dir
 
     # General pipeline settings
     rerun: false
-    save_parquet: true
-    verbose: true
     
     # Paths
-    data_dir: "data/raw"
-    cached_dir: "data/processed"
+    data_dir: "raw_data"
+    cached_dir: "processed"
     results_dir: "results"
     logs_dir: "logs"
     
     # Metabolites for analysis
     target_mz_list:
-      p-coumerate: 163.04007
-      urocanate: 137.03565
-      caffeate: 179.03498
-      cinnamate: 147.04460
-      ferulate: 193.05009
-      sinapate: 223.06065
+      catechin: 289.0718        # [M − H]⁻
     
     # tolerance for mz detection
     target_mz_params:
-      tol: 0.01
+      ppm: 3
+      da: 0.3
     
     # Parsing and preprocessing of mzML files
     parser:
@@ -133,8 +118,8 @@ In order for this to work, you should have two files located in the `config` dir
     baseline:
       method: asls
       asls:
-        lambda: 1e5
-        p: 0.01
+        lambda: 1e6
+        p: 0.1
         niter: 10
         tol: 1e-6
       snip:
@@ -154,151 +139,237 @@ In order for this to work, you should have two files located in the `config` dir
     plotting:
       tic: true
       bpc: true
+      tic_and_bpc: true
+      corrected: true
       xic: true
-      save_figures: true
-
+    
+    plotting_params:
+      corrected:
+        plot_types: ["tic", "bpc"]
+      xic:
+        metabolites: "all"
     ```
   </details>
 
 - <details>
     <summary>see sample list example</summary>
     
-    ```yaml
-    samples:
-      - unique_id: SL011_EA_1
-        id: SL011
-        file: 031__20210415__SL011__EA_Blank__nosplit.mzML
-        condition: Control
-        description: Extraction Blank
-        replicate: 1
-        species: H. filiformis
-      
-      - unique_id: SL011_PooledQC_1
-        id: SL011
-        file: 033__20210415__SL011__PooledQC__nosplit.mzML
-        condition: Control
-        description: Pooled quality control
-        replicate: 1
-        species: H. filiformis
-      
-      - unique_id: SL011_HS_1
-        id: SL011
-        file: 045__20210415__SL011__HS1__nosplit.mzML
-        condition: Treatment
-        description: Sample
-        replicate: 1
-        species: H. filiformis
-  
-    ```
+    ```csv
+    id,file,condition,description,replicate,species
+    SL2031,024_20230825_SL2031__SW-cat_MS1_neg.mzML,Treatment,Sample,1,S. wadsworthensis
+    SL2031,018_20230825_SL2031__EL-cat_MS1_neg.mzML,Treatment,Sample,1,E. lenta
+    SL2031,019_20230825_SL2031__EL-cat_MS2_neg.mzML,Treatment,Sample,2,E. lenta
+    SL2031,003_20230825_SL2031__MB_MS1_neg.mzML,Control,Method Blank,1,E. lenta
+    SL2031,004_20230825_SL2031__MB_MS2_neg.mzML,Control,Method Blank,2,E. lenta
+   ```
   </details>  
+#### [1.] Project Setup
 
-Run `Ionome` class object to initialize the workflow.
+Run `IonomeProjectSetup().create_project("run_id", sample_table="run_id_samples.csv")`  
 
 ```python
-from src.ionome_core import Ionome
-example = Ionome(run_id="SL011", samples="samples_SL011.yaml")
+from src.project_setup import IonomeProjectSetup
+IonomeProjectSetup().create_project(project_name="SL2031", sample_table="SL2031_samples.csv")
 ```
 
-    >[2025-11-17 06:11:16][Ionome.__init__]
-    	Initializing run ID SL011 for analysis
+    >[2025-12-18 04:26:08][IonomeProjectSetup.__init__]
+    >[2025-12-18 04:26:08][IonomeProjectSetup.create_project]
+	  [>] Project 'SL2031' created successfully.
+       Follow these steps:
+       [1.] Before running 'Ionome', manually copy data files into the raw_data folder/directory.
+       [2.] Check and edit the config_SL2031.yaml file if necessary.
+       [3.] Confirm the samples_SL2031.yaml file has all the samples data.
+       [4.] Run Ionome('SL2031', 'samples_SL2031.yaml')
 
+Follow the steps listed.
+
+#### [2.] Project initialization
+Run `Ionome(run_id="run_id", samples="samples_run_id.yaml")` class object to initialize the workflow.
+```python
+from src.ionome_core import Ionome
+example = Ionome(run_id="SL2031", samples="samples_SL2031.yaml")
+```
+
+    >[2025-12-18 04:26:08][Ionome.__init__]
+      > Initializing run ID SL2031 with 5 samples:
+        → SL2031_SW-cat_MS1_neg_1 (Sample | rep 1 | species S. wadsworthensis)
+        → SL2031_EL-cat_MS1_neg_1 (Sample | rep 1 | species E. lenta)
+        → SL2031_EL-cat_MS2_neg_2 (Sample | rep 2 | species E. lenta)
+        → SL2031_MB_MS1_neg_1 (Method blank | rep 1 | species E. lenta)
+        → SL2031_MB_MS2_neg_2 (Method blank | rep 2 | species E. lenta)
+
+#### [3.] Loading of data from mzML files
 Load the spectra data from mzml files using `load.data()`:
 
 ```python
 example.load_data()
 ```
 
-    >[2025-11-19 17:49:44][Ionome.load_data]
-    	> Loading spectra data for sample SL011_EA_1...
-    	  Using cached file
-    	> Loading spectra data for sample SL011_MB_1...
-    	  Using cached file
-    	> Loading spectra data for sample SL011_HS_1...
-    	  Using cached file
-    	...
+    >[2025-12-18 04:36:10][Ionome.load_data]
+      > Loading spectra data:
+       ✓ 024_20230825_SL2031__SW-cat_MS1_neg.mzML
+       ✓ 018_20230825_SL2031__EL-cat_MS1_neg.mzML
+       ✓ 019_20230825_SL2031__EL-cat_MS2_neg.mzML
+       ✓ 003_20230825_SL2031__MB_MS1_neg.mzML
+       ✓ 004_20230825_SL2031__MB_MS2_neg.mzML
 
-
-Check each individual dataframes by `.data['sample_name']`
-
-```python
-ea_1_df = example.data['SL011_EA_1'] # extraction blank control
-ea_1_df
-```
-|         | ms_level | scan_id | retention_time | intensity |     mz |
-|--------:|---------:|--------:|---------------:|----------:|-------:|
-|       0 |        1 |       1 |        4.29355 |   430.934 |  50.12 |
-|       1 |        1 |       1 |        4.29355 |   836.703 |  50.91 |
-|       2 |        1 |       1 |        4.29355 |   1448.42 |  52.04 |
-|       3 |        1 |       1 |        4.29355 |   293.509 |  52.96 |
-|       4 |        1 |       1 |        4.29355 |   341.261 |  54.09 |
-|     ... |      ... |     ... |            ... |       ... |    ... |
-| 1889741 |        1 |    2990 |        22.9909 |   4.43263 |  595.7 |
-| 1889742 |        1 |    2990 |        22.9909 |   3.41086 | 596.93 |
-| 1889743 |        1 |    2990 |        22.9909 |  0.733822 | 597.76 |
-| 1889744 |        1 |    2990 |        22.9909 |   1.92111 | 598.36 |
-| 1889745 |        1 |    2990 |        22.9909 |  0.810828 | 599.46 |
+#### [4.] Extract quality control data for QC plots
+Generates the required dataframe for QC plotting using `extract_quality_control()`
 
 ```python
-hs_1_df = example.data['SL011_HS_1'] # sample
-hs_1_df
-
+example.extract_quality_control()
 ```
-|         | ms_level | scan_id | retention_time | intensity |     mz |
-|--------:|---------:|--------:|---------------:|----------:|-------:|
-|       0 |        1 |       1 |        4.29338 |   23233.4 |  50.04 |
-|       1 |        1 |       1 |        4.29338 |   35742.2 |  51.04 |
-|       2 |        1 |       1 |        4.29338 |   91149.1 |  52.04 |
-|       3 |        1 |       1 |        4.29338 |   11119.5 |  53.03 |
-|       4 |        1 |       1 |        4.29338 |   1989.25 |  54.03 |
-|     ... |      ... |     ... |            ... |       ... |    ... |
-| 1735420 |        1 |    2990 |        22.9907 |   2.73713 | 595.63 |
-| 1735421 |        1 |    2990 |        22.9907 |   1.62367 | 596.56 |
-| 1735422 |        1 |    2990 |        22.9907 |   3.17359 | 597.72 |
-| 1735423 |        1 |    2990 |        22.9907 |   2.93057 | 598.67 |
-| 1735424 |        1 |    2990 |        22.9907 |   1.03776 | 599.26 |
 
-### Quality Control plots
-Plot and visualize basic quality control plots, use `plot_chromatogram('tic')` to show Total Ion Chromatograms (TIC plots)
+    >[2025-12-18 04:36:24][Ionome.extract_quality_control]
+      > Extracting quality control data (TIC,BPC):
+        ✓ SL2031_SW-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS2_neg_2
+        ✓ SL2031_MB_MS1_neg_1
+        ✓ SL2031_MB_MS2_neg_2
 
+#### [5.] Extract XIC data per metabolite listed
+Filters the dataframe for each target m/z values from `run_id_config.yaml` file
 ```python
-example.plot_chromatogram("tic")
+example.extract_ion_chromatograms()
 ```
-<img src="git_images/SL011_EA_1_tic_chrom.png" width="1000">
-<img src="git_images/SL011_MB_1_tic_chrom.png" width="1000">
-<img src="git_images/SL011_HS_1_tic_chrom.png" width="1000">
 
-### Baseline correction 
-> (work in progress)
+    >[2025-12-18 04:36:25][Ionome.extract_ion_chromatograms]
+      > Extracting XIC chromatogram data:
+        SL2031_SW-cat_MS1_neg_1 --> {'catechin': 289.0718}
+            ✓ catechin (289.0718): tol=0.000867 Da, hits=359
+        SL2031_EL-cat_MS1_neg_1 --> {'catechin': 289.0718}
+            ✓ catechin (289.0718): tol=0.000867 Da, hits=297
+        SL2031_EL-cat_MS2_neg_2 --> {'catechin': 289.0718}
+            ✓ catechin (289.0718): tol=0.000867 Da, hits=265
+        SL2031_MB_MS1_neg_1 --> {'catechin': 289.0718}
+            ✓ catechin (289.0718): tol=0.000867 Da, hits=32
+        SL2031_MB_MS2_neg_2 --> {'catechin': 289.0718}
+            ✓ catechin (289.0718): tol=0.000867 Da, hits=30
 
-### Extracted Ion Chromatograms
-Extract specific mass-to-charge (m/z) values of interest for analysis using `extract_xic()`  
-Access specific metabolite dataframe of extracted m/z values with `df_xic['sample']['metabolite']`
-
+#### [6.] Baseline correction
+Removes noise from data, needs to be called per chromatogram you wish to correct with `correct_baseline(chromatogram_type)`
 ```python
-example.extract_xic()
-example.df_xic["SL011_HS_1"]["cinnamate"]
+example.correct_baseline("tic")
+example.correct_baseline("bpc")
+example.correct_baseline("xic")
 ```
-|      | scan_id | retention_time | intensity |
-|-----:|--------:|---------------:|----------:|
-|    0 |       1 |        4.29338 |         0 |
-|    1 |       2 |        4.29963 |         0 |
-|    2 |       3 |        4.30588 |         0 |
-|    3 |       4 |        4.31215 |   70983.5 |
-|    4 |       5 |         4.3184 |    153703 |
-|  ... |     ... |            ... |       ... |
-| 2985 |    2986 |        22.9657 |         0 |
-| 2986 |    2987 |         22.972 |         0 |
-| 2987 |    2988 |        22.9782 |         0 |
-| 2988 |    2989 |        22.9845 |         0 |
-| 2989 |    2990 |        22.9907 |         0 |
 
-Extracted Ion Chromatogram using `plot_chromatogram('xic')`
+    >[2025-12-18 04:36:24][Ionome.correct_baseline]
+      > Correcting tic chromatogram baseline using 'asls' method:
+        ✓ SL2031_SW-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS2_neg_2
+        ✓ SL2031_MB_MS1_neg_1
+        ✓ SL2031_MB_MS2_neg_2
+
+    >[2025-12-18 04:36:25][Ionome.correct_baseline]
+      > Correcting bpc chromatogram baseline using 'asls' method:
+        ✓ SL2031_SW-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS2_neg_2
+        ✓ SL2031_MB_MS1_neg_1
+        ✓ SL2031_MB_MS2_neg_2
+
+    >[2025-12-18 04:36:25][Ionome.correct_baseline]
+      > Correcting xic chromatogram baseline using 'asls' method:
+        ✓ SL2031_SW-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS1_neg_1
+        ✓ SL2031_EL-cat_MS2_neg_2
+        ✓ SL2031_MB_MS1_neg_1
+        ✓ SL2031_MB_MS2_neg_2
+
+#### [7.] Peak detection
+Automatically tries to detect peaks from XIC data, `peak_detection()`
 ```python
-example.plot_chromatogram('xic')
+example.peak_detection()
 ```
 
-<img src="git_images/SL011_HS_1_xic_chrom_p-coumerate.png" width="1000">
+    >[2025-12-18 04:36:25][Ionome.peak_d]
+	  > Detecting peaks in XIC Chromatograms:
+    >[2025-12-18 04:36:25][DetectPeaks.detect_peaks]
+	   Finished deconvolution: 100%|█████████████████| 4/4 [00:00<00:00,  9.18it/s]
 
+#### [8.] Plotting of chromatograms
+Plots all available chromatograms, use `plot_chromatogram()`
+```python
+example.plot_chromatogram()
+```
+
+    >[2025-12-18 04:36:26][Ionome.plot_chromatogram]
+      > Plotting Chromatograms:
+        ✓ tic for SL2031_EL-cat_MS1_neg_1
+        ✓ bpc for SL2031_EL-cat_MS1_neg_1
+        ✓ tic_and_bpc for SL2031_EL-cat_MS1_neg_1
+        ✓ corrected for SL2031_EL-cat_MS1_neg_1
+        ✓ xic for SL2031_EL-cat_MS1_neg_1
+
+|           Total Ion Chromatogram           |           Base Peak Chromatogram           |
+|:------------------------------------------:|:------------------------------------------:|
+| <img src="git_images/tic.png" width="300"> | <img src="git_images/bpc.png" width="300"> |
+
+| TIC - BPC                                      |
+|:-----------------------------------------------|
+| <img src="git_images/tic_bpc.png" width="600"> |
+
+|          Total Ion Chromatogram (Corrected)          |          Base Peak Chromatogram (Corrected)          |
+|:----------------------------------------------------:|:----------------------------------------------------:|
+| <img src="git_images/tic_corrected.png" width="300"> | <img src="git_images/bpc_corrected.png" width="300"> |
+
+| Extracted Ion Chromatogram                          |
+|:----------------------------------------------------|
+| <img src="git_images/xic_catechin.png" width="600"> |
+
+#### [9.] Summary Report
+To look at the summary report, use `ionome.samples['sample_id'].summarize()  
+Prints a quick summary of all current dataframes and metadata
+```python
+ionome.samples['SL2031_EL-cat_MS1_neg_1'].summartize()
+```
+
+    ------------------------------------------------------------
+    Sample Summary for sample: SL2031_EL-cat_MS1_neg_1
+    ------------------------------------------------------------
+        --- Metadata ---
+     batch_id    : SL2031
+     condition   : Treatment
+     species     : E. lenta
+     replicate   : 1
+    
+        --- Data Containers & Shapes ---
+     .raw                  (Shape: (982226, 5))
+         ms_level            : (1, 1, 1, 1, 1)
+         scan_id             : (1, 1, 1, 1, 1)
+         retention_time      : (0.2030345504, 0.2030345504, 0.2030345504, 0.2030345504, 0.2030345504)
+         intensity           : (1277.448486328125, 1243.3863525390625, 1294.443115234375, 1293.4158935546875, 1348.3358154296875)
+         mz                  : (201.58956909179688, 203.3817138671875, 206.59169006347656, 211.20188903808594, 212.4447021484375)
+     .quality_control      (Shape: (948, 10))
+         scan_id             : (1, 2, 3, 4, 5)
+         retention_time      : (0.2030345504, 0.209668530933, 0.216330321867, 0.222993905333, 0.2296752032)
+         tic                 : (56061.86328125, 12045911.0, 11931071.0, 10031950.0, 10763100.0)
+         bpc                 : (1837.5543212890625, 1656042.25, 1954991.5, 1533433.125, 254613.625)
+         peaks_per_scan      : (38, 767, 808, 811, 1385)
+         bpc_mz              : (689.7496337890625, 239.05934143066406, 239.05929565429688, 239.0592803955078, 320.885986328125)
+         tic_baseline        : (2792250.250079534, 2871322.1178501286, 2950391.5230511753, 3029456.9205720145, 3108517.663369936)
+         tic_corrected       : (0.0, 9174588.882149871, 8980679.476948824, 7002493.0794279855, 7654582.336630064)
+         bpc_baseline        : (95730.9049316631, 98861.03125974465, 101991.07308381064, 105121.10161796742, 108251.37337636406)
+         bpc_corrected       : (0.0, 1557181.2187402553, 1853000.4269161893, 1428312.0233820325, 146362.25162363594)
+    
+    .xic                  (Contains 1 entries)
+      [catechin] (Shape: (948, 5))
+         scan_id             : (1, 2, 3, 4, 5)
+         retention_time      : (0.2030345504, 0.209668530933, 0.216330321867, 0.222993905333, 0.2296752032)
+         intensity           : (0.0, 2275.997314453125, 0.0, 0.0, 0.0)
+         baseline            : (-3236.314653717777, -3198.864595635201, -3161.414213921161, -3123.9626374580002, -3086.5086789866446)
+         corrected           : (0.0, 5474.861910088326, 0.0, 0.0, 0.0)
+    
+    .unmixed_chromatograms (Contains 1 entries)
+      [catechin] (Shape: (948, 5))
+         Values (first 5)     : (0.0, 0.0, 0.0, 0.0, 0.0)
+    
+    .peaks_properties     (Contains 1 entries)
+      [catechin] (4 entries)
+      ...
 
 ## LICENSE
 

@@ -2,29 +2,16 @@
 
 # General pipeline settings
 rerun: false
-save_parquet: true
-verbose: true
 
 # Paths
-data_dir: "data/raw_SL2031"
-cached_dir: "data/processed"
+data_dir: "raw_data"
+cached_dir: "processed"
 results_dir: "results"
 logs_dir: "logs"
 
 # Metabolites for analysis
 target_mz_list:
-  p-coumerate: 163.04007
-  urocanate: 137.03565
-  caffeate: 179.03498
-  cinnamate: 147.04460
-  ferulate: 193.05009
-  sinapate: 223.06065
-
-target_mz_list2:
-  catechin: 290.07903
-  chlorogenate: 353.08725
-  rosmarinate: 359.07669
-  shikimate: 173.04499
+  catechin: 289.0718        # [M − H]⁻
 
 # tolerance for mz detection
 target_mz_params:
@@ -60,6 +47,12 @@ peak_detection:
 plotting:
   tic: true
   bpc: true
+  tic_and_bpc: true
+  corrected: true
   xic: true
-  save_figures: true
 
+plotting_params:
+  corrected:
+    plot_types: ["tic", "bpc"]
+  xic:
+    metabolites: "all"

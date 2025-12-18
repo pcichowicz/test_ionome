@@ -154,9 +154,9 @@ class SampleData:
                 print(f"\t\t {format_data_summary(df)}")
 
         # Define the fields that are Dictionaries of DataFrames
-        dict_dfs = ['xic']
-                    # 'unmixed_chromatograms',
-                    # 'peaks_properties', 'window_df_properties']
+        dict_dfs = ['xic',
+                    'unmixed_chromatograms',
+                    'peaks_properties', 'window_df_properties']
 
         for field_name in dict_dfs:
             data_dict = getattr(self, field_name)

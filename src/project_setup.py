@@ -90,7 +90,6 @@ class IonomeProjectSetup:
 
         # THIS SHOULD BE sample_table, however for testing using a dir within project
 
-
         if not sample_table:
             sample_template = load_yaml(self.templates_dir / f"samples_template.yaml")
             samp_path = project_root / f"samples_{project_name}.yaml"
@@ -112,6 +111,9 @@ class IonomeProjectSetup:
         print(f"\t [3.] Confirm the samples_{project_name}.yaml file has all the samples data.")
         print(f"\t [4.] Run Ionome('{project_name}', '{samp_out.stem}')")
         return project_root
+
+    def download_data(self):
+        print(f"Downloads data from database.")
 ##==============================##
 ## Command Line Interface (CLI) ##
 ##==============================##

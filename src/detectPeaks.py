@@ -25,7 +25,7 @@ class DetectPeaks:
         """r
         Extracts and assigns sections of chromatogram that has peaks into "windows"
         """
-        print(self.metabolite)
+        # print(self.metabolite)
         # window_df_properies = None
 
         # 1. normalize corrected intensity
