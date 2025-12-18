@@ -1,0 +1,6 @@
+id,file,condition,description,replicate,species
+SL2031,024_20230825_SL2031__SW-cat_MS1_neg.mzML,Treatment,Sample,1,S. wadsworthensis
+SL2031,018_20230825_SL2031__EL-cat_MS1_neg.mzML,Treatment,Sample,1,E. lenta
+SL2031,019_20230825_SL2031__EL-cat_MS2_neg.mzML,Treatment,Sample,2,E. lenta
+SL2031,003_20230825_SL2031__MB_MS1_neg.mzML,Control,Method Blank,1,E. lenta
+SL2031,004_20230825_SL2031__MB_MS2_neg.mzML,Control,Method Blank,2,E. lenta
