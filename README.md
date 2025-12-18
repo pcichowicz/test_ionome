@@ -306,19 +306,19 @@ example.plot_chromatogram()
 
 |           Total Ion Chromatogram           |           Base Peak Chromatogram           |
 |:------------------------------------------:|:------------------------------------------:|
-| <img src="git_images/tic.png" width="300"> | <img src="git_images/bpc.png" width="300"> |
+| <img src="git_images/tic.png" width="450"> | <img src="git_images/bpc.png" width="450"> |
 
 | TIC - BPC                                      |
 |:-----------------------------------------------|
-| <img src="git_images/tic_bpc.png" width="600"> |
+| <img src="git_images/tic_bpc.png" width="450"> |
 
 |          Total Ion Chromatogram (Corrected)          |          Base Peak Chromatogram (Corrected)          |
 |:----------------------------------------------------:|:----------------------------------------------------:|
-| <img src="git_images/tic_corrected.png" width="300"> | <img src="git_images/bpc_corrected.png" width="300"> |
+| <img src="git_images/tic_corrected.png" width="450"> | <img src="git_images/bpc_corrected.png" width="450"> |
 
 | Extracted Ion Chromatogram                          |
 |:----------------------------------------------------|
-| <img src="git_images/xic_catechin.png" width="600"> |
+| <img src="git_images/xic_catechin.png" width="450"> |
 
 #### [9.] Summary Report
 To look at the summary report, use `ionome.samples['sample_id'].summarize()  
