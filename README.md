@@ -87,7 +87,7 @@ In order for this to work, you should have two files located in the `config` dir
 1. config.yaml
 2. run_id_samples.csv (run_id should be the name of your experiment/name of run,etc)
 - <details>
-    <summary>see config example</summary>
+    <summary>click to see config example</summary>
 
     ```yaml
     # config.yaml
@@ -152,7 +152,7 @@ In order for this to work, you should have two files located in the `config` dir
   </details>
 
 - <details>
-    <summary>see sample list example</summary>
+    <summary>click to see sample list example</summary>
     
     ```csv
     id,file,condition,description,replicate,species
