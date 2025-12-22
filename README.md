@@ -1,4 +1,4 @@
-# < Ionome >
+#  >Ionome-py
 
 ---
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -7,7 +7,7 @@
 ![Static Badge](https://img.shields.io/badge/pypi_package-In_development-yellow)
 
 
-**Ionome** is an LC–MS data analysis pipeline designed for exploratory metabolomics, peak extraction, and automated chromatographic processing.  
+**Ionome-py** is an LC–MS data analysis pipeline designed for exploratory metabolomics, peak extraction, and automated chromatographic processing.  
 The long-term goal of this project is to provide a modular, reproducible workflow for working with mzML files, extracting XICs, computing TIC/BPC, managing datasets, and generating a final report.
 
 This repository currently focuses on:
